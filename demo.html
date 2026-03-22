@@ -56,7 +56,41 @@
         }
     </style>
 </head>
-<body class="bg-surface text-[#1E293B]" x-data="{ loggedIn: false, activePage: 'dashboard' }">
+<body class="bg-surface text-[#1E293B]" x-data="{ 
+    loggedIn: false, 
+    activePage: 'dashboard',
+    modal: { show: false, title: '', content: '' },
+    openModal(title, content) {
+        this.modal.title = title;
+        this.modal.content = content;
+        this.modal.show = true;
+        this.$nextTick(() => { lucide.createIcons(); });
+    }
+}">
+
+    <!-- MODAL COMPONENT -->
+    <div x-show="modal.show" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div @click="modal.show = false" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div x-show="modal.show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 class="font-headline text-2xl font-black text-slate-900" x-text="modal.title"></h3>
+                <button @click="modal.show = false" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-tertiary transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto" x-html="modal.content"></div>
+            
+            <div class="p-8 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                <button @click="modal.show = false" class="px-8 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:opacity-90 transition-all">Đóng</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 1. WELCOME / LOGIN SCREEN -->
     <div x-show="!loggedIn" class="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -91,12 +125,15 @@
             </div>
         </div>
 
-        <div class="absolute bottom-12 left-0 right-0 flex justify-center gap-12 text-[11px] font-black text-slate-700 uppercase tracking-[0.2em]">
-            <span>Security First</span>
-            <span>•</span>
-            <span>Real-time Sync</span>
-            <span>•</span>
-            <span>Enterprise Grade</span>
+        <div class="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-6">
+            <div class="flex justify-center gap-12 text-[11px] font-black text-slate-700 uppercase tracking-[0.2em]">
+                <span>Security First</span>
+                <span>•</span>
+                <span>Real-time Sync</span>
+                <span>•</span>
+                <span>Enterprise Grade</span>
+            </div>
+            <p class="text-[10px] font-black text-slate-800 tracking-[0.3em] uppercase">Copyright by thaoyin</p>
         </div>
     </div>
 
@@ -161,17 +198,17 @@
                 </div>
 
                 <div class="flex items-center gap-6">
-                    <button class="relative text-slate-400 hover:text-primary transition-colors">
+                    <button @click="openModal('Thông báo', '<div class=\'space-y-4\'><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100\'><p class=\'text-sm font-bold\'>Yêu cầu rút tiền mới</p><p class=\'text-xs text-slate-500\'>Tài xế Nguyễn Văn A vừa gửi yêu cầu rút 2,000,000 đ</p></div><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100\'><p class=\'text-sm font-bold\'>Cảnh báo phù hiệu</p><p class=\'text-xs text-slate-500\'>15 tài xế sắp hết hạn phù hiệu trong 7 ngày tới</p></div></div>')" class="relative text-slate-400 hover:text-primary transition-colors">
                         <i data-lucide="bell" class="w-6 h-6"></i>
                         <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-tertiary border-2 border-white rounded-full"></span>
                     </button>
                     <div class="h-8 w-[1px] bg-slate-200"></div>
-                    <div class="flex items-center gap-3">
+                    <div @click="openModal('Thông tin cá nhân', '<div class=\'flex flex-col items-center gap-4\'><img src=\'https://picsum.photos/seed/admin/200/200\' class=\'w-24 h-24 rounded-3xl border-4 border-slate-100 shadow-xl\'><div class=\'text-center\'><p class=\'text-xl font-black text-slate-900\'>Quách Thành Đạt</p><p class=\'text-sm text-slate-400 font-bold uppercase tracking-widest\'>Administrator</p></div><div class=\'w-full space-y-3 mt-4\'><div class=\'p-4 bg-slate-50 rounded-2xl flex justify-between\'><span class=\'text-xs font-bold text-slate-400\'>Email</span><span class=\'text-sm font-bold\'>dat.quach@saco.vn</span></div><div class=\'p-4 bg-slate-50 rounded-2xl flex justify-between\'><span class=\'text-xs font-bold text-slate-400\'>Phòng ban</span><span class=\'text-sm font-bold\'>Vận hành & Tài chính</span></div></div></div>')" class="flex items-center gap-3 cursor-pointer group">
                         <div class="text-right">
-                            <p class="text-sm font-bold text-slate-900 leading-none">Quách Thành Đạt</p>
+                            <p class="text-sm font-bold text-slate-900 leading-none group-hover:text-primary transition-colors">Quách Thành Đạt</p>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-1">Administrator</p>
                         </div>
-                        <img src="https://picsum.photos/seed/admin/100/100" alt="Avatar" class="w-10 h-10 rounded-2xl object-cover border-2 border-slate-100 shadow-sm">
+                        <img src="https://picsum.photos/seed/admin/100/100" alt="Avatar" class="w-10 h-10 rounded-2xl object-cover border-2 border-slate-100 shadow-sm group-hover:border-primary/30 transition-all">
                     </div>
                 </div>
             </header>
@@ -186,7 +223,7 @@
                             <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Tổng quan vận hành</h2>
                             <p class="text-slate-500 font-medium mt-1">Dữ liệu cập nhật thời gian thực từ hệ thống XanhSM.</p>
                         </div>
-                        <button class="bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+                        <button @click="openModal('Xuất báo cáo tổng quan', '<div class=\'space-y-6\'><div class=\'p-6 bg-primary/5 rounded-3xl border border-primary/10 flex items-center gap-4\'><i data-lucide=\'file-text\' class=\'text-primary w-10 h-10\'></i><div><p class=\'font-black text-slate-900\'>Báo cáo vận hành tháng 05/2024</p><p class=\'text-xs text-slate-500\'>Dữ liệu từ 01/05 đến 24/05</p></div></div><button class=\'w-full py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20\'>Tải xuống PDF</button></div>')" class="bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             Xuất báo cáo
                         </button>
@@ -194,7 +231,7 @@
 
                     <!-- Stats Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="bg-primary p-6 rounded-[2rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden">
+                        <div @click="openModal('Doanh thu hôm nay', '<div class=\'space-y-6\'><div class=\'h-40 bg-slate-50 rounded-2xl flex items-end justify-between p-4 gap-2\'><div class=\'w-full bg-primary/20 h-[30%] rounded-t-lg\'></div><div class=\'w-full bg-primary/20 h-[50%] rounded-t-lg\'></div><div class=\'w-full bg-primary/20 h-[40%] rounded-t-lg\'></div><div class=\'w-full bg-primary/20 h-[70%] rounded-t-lg\'></div><div class=\'w-full bg-primary h-[90%] rounded-t-lg\'></div></div><p class=\'text-sm text-slate-600 leading-relaxed\'>Doanh thu đạt đỉnh vào khung giờ 07:00 - 09:00 sáng. Tăng trưởng 12% so với cùng kỳ ngày hôm qua.</p></div>')" class="bg-primary p-6 rounded-[2rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-all">
                             <p class="text-white/60 text-[10px] font-black uppercase tracking-widest">Doanh thu hôm nay</p>
                             <h3 class="text-4xl font-black font-headline mt-2">142.5 <span class="text-lg font-medium opacity-60">trđ</span></h3>
                             <div class="mt-6 flex items-center gap-2 text-xs font-bold bg-white/10 w-fit px-3 py-1 rounded-full">
@@ -202,19 +239,19 @@
                                 <span>+12% so với hôm qua</span>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                        <div @click="openModal('Tài xế đang chạy', '<div class=\'space-y-6\'><div class=\'grid grid-cols-2 gap-4\'><div class=\'p-4 bg-emerald-50 rounded-2xl border border-emerald-100\'><p class=\'text-[10px] text-emerald-600 font-bold uppercase\'>Đang hoạt động</p><p class=\'text-2xl font-black text-emerald-900\'>842</p></div><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100\'><p class=\'text-[10px] text-slate-400 font-bold uppercase\'>Ngoại tuyến</p><p class=\'text-2xl font-black text-slate-900\'>358</p></div></div><p class=\'text-sm text-slate-600\'>Hiệu suất sử dụng đội xe đang ở mức 70%. Đội ngũ vận hành đang điều phối thêm tài xế vào các khu vực có nhu cầu cao.</p></div>')" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all">
                             <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tài xế đang chạy</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">842 <span class="text-lg font-medium text-slate-300">/ 1.2k</span></h3>
                             <div class="mt-4 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                                 <div class="bg-secondary h-full w-[70%]"></div>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                        <div @click="openModal('Tổng tiền ký quỹ', '<div class=\'space-y-6\'><div class=\'p-6 bg-slate-900 rounded-[2.5rem] text-white\'><p class=\'text-white/50 text-[10px] font-black uppercase tracking-widest\'>Quỹ bảo đảm</p><p class=\'text-4xl font-black mt-2\'>4.2 tỷ đ</p></div><p class=\'text-sm text-slate-600 leading-relaxed\'>Số tiền ký quỹ được duy trì để đảm bảo trách nhiệm dân sự và các nghĩa vụ tài chính của tài xế đối tác. Hiện tại 98% tài xế đã hoàn tất ký quỹ đầy đủ.</p></div>')" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all">
                             <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tổng tiền ký quỹ</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">4.2 <span class="text-lg font-medium text-slate-300">tỷ</span></h3>
                             <p class="mt-4 text-[10px] font-bold text-secondary uppercase">An toàn hệ thống</p>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-[2rem] border border-red-100 shadow-sm relative overflow-hidden">
+                        <div @click="openModal('Cảnh báo nợ xấu', '<div class=\'space-y-6\'><div class=\'p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-4\'><i data-lucide=\'alert-circle\' class=\'text-red-600 w-10 h-10\'></i><div><p class=\'font-bold text-red-900\'>12 tài xế nợ quá hạn</p><p class=\'text-xs text-red-600\'>Tổng nợ: 42.500.000 VNĐ</p></div></div><p class=\'text-sm text-slate-600\'>Hệ thống đã tự động gửi thông báo nhắc nợ. Các tài khoản này sẽ bị tạm khóa nếu không hoàn tất đối soát trong 24h tới.</p></div>')" class="bg-red-50 p-6 rounded-[2rem] border border-red-100 shadow-sm relative overflow-hidden cursor-pointer hover:bg-red-100 transition-all">
                             <p class="text-red-400 text-[10px] font-black uppercase tracking-widest">Cảnh báo nợ xấu</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-red-600">12 <span class="text-lg font-medium opacity-60">TX</span></h3>
                             <i data-lucide="alert-circle" class="absolute -right-4 -top-4 w-24 h-24 text-red-500/10"></i>
@@ -245,21 +282,21 @@
                         <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
                             <h4 class="text-lg font-black text-slate-900 mb-8">Nhật ký hệ thống</h4>
                             <div class="space-y-6">
-                                <div class="flex gap-4">
+                                <div @click="openModal('Chi tiết giao dịch', '<div class=\'space-y-4\'><div class=\'p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4\'><i data-lucide=\'check-circle\' class=\'text-emerald-600 w-10 h-10\'></i><div><p class=\'font-bold text-emerald-900\'>Duyệt rút tiền thành công</p><p class=\'text-xs text-emerald-600\'>Mã GD: #FT9921</p></div></div><div class=\'space-y-2\'><div class=\'flex justify-between text-sm\'><span class=\'text-slate-400\'>Tài xế</span><span class=\'font-bold\'>Nguyễn Lâm</span></div><div class=\'flex justify-between text-sm\'><span class=\'text-slate-400\'>Số tiền</span><span class=\'font-bold text-primary\'>2,450,000 đ</span></div><div class=\'flex justify-between text-sm\'><span class=\'text-slate-400\'>Thời gian</span><span class=\'font-bold\'>14:20 - 24/05/2024</span></div></div></div>')" class="flex gap-4 cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-all">
                                     <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">NL</div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-900">Duyệt rút tiền <span class="text-primary">#FT9921</span></p>
                                         <p class="text-[10px] text-slate-400 font-medium mt-1">14:20 • Nguyễn Lâm</p>
                                     </div>
                                 </div>
-                                <div class="flex gap-4">
+                                <div @click="openModal('Chi tiết sự kiện', '<div class=\'space-y-4\'><div class=\'p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-4\'><i data-lucide=\'lock\' class=\'text-red-600 w-10 h-10\'></i><div><p class=\'font-bold text-red-900\'>Khóa tài khoản đối tác</p><p class=\'text-xs text-red-600\'>Mã TX: TX-8821</p></div></div><p class=\'text-sm text-slate-600\'>Tài khoản bị tạm khóa do vi phạm chính sách đối soát tài chính (Nợ quá hạn 3 kỳ liên tiếp).</p></div>')" class="flex gap-4 cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-all">
                                     <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs shrink-0">HA</div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-900">Khóa tài khoản <span class="text-tertiary">TX-8821</span></p>
                                         <p class="text-[10px] text-slate-400 font-medium mt-1">13:45 • Hoàng Anh</p>
                                     </div>
                                 </div>
-                                <div class="flex gap-4">
+                                <div @click="openModal('Thay đổi cấu hình', '<div class=\'space-y-4\'><div class=\'p-4 bg-sky-50 rounded-2xl border border-sky-100 flex items-center gap-4\'><i data-lucide=\'settings\' class=\'text-sky-600 w-10 h-10\'></i><div><p class=\'font-bold text-sky-900\'>Cập nhật biểu phí</p><p class=\'text-xs text-sky-600\'>Người thực hiện: Thành Đạt</p></div></div><p class=\'text-sm text-slate-600\'>Phí quản lý HTX được điều chỉnh từ 12% lên 15% áp dụng cho khu vực TP.HCM.</p></div>')" class="flex gap-4 cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-all">
                                     <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-xs shrink-0">TD</div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-900">Cập nhật biểu phí HTX</p>
@@ -279,7 +316,7 @@
                             <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Quản lý tài xế</h2>
                             <p class="text-slate-500 font-medium mt-1">Danh sách đối tác vận tải thuộc hệ thống SACO.</p>
                         </div>
-                        <button class="bg-primary text-white px-8 py-4 rounded-2xl text-sm font-bold flex items-center gap-2 hover:shadow-xl transition-all">
+                        <button @click="openModal('Thêm tài xế mới', '<div class=\'space-y-6\'><p class=\'text-sm text-slate-500\'>Nhập thông tin cơ bản để bắt đầu quy trình đăng ký đối tác mới:</p><div class=\'space-y-4\'><div><label class=\'block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2\'>Họ và tên</label><input type=\'text\' class=\'w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none\' placeholder=\'Nguyễn Văn A\'></div><div><label class=\'block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2\'>Số điện thoại</label><input type=\'text\' class=\'w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none\' placeholder=\'090x xxx xxx\'></div><button class=\'w-full py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 mt-4\'>Tiếp tục bước 2</button></div></div>')" class="bg-primary text-white px-8 py-4 rounded-2xl text-sm font-bold flex items-center gap-2 hover:shadow-xl transition-all">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             Thêm tài xế mới
                         </button>
@@ -298,7 +335,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                                <tr class="hover:bg-slate-50/30 transition-colors">
+                                <tr @click="openModal('Chi tiết tài xế', '<div class=\'space-y-6\'><div class=\'flex items-center gap-4\'><div class=\'w-16 h-16 rounded-3xl bg-primary-fixed flex items-center justify-center text-primary font-black text-2xl\'>NL</div><div><p class=\'font-black text-slate-900 text-xl\'>Nguyễn Lâm Nhật</p><p class=\'text-sm text-slate-400 font-bold\'>0901 234 567 • HTX Sài Gòn Xanh</p></div></div><div class=\'grid grid-cols-3 gap-4\'><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center\'><p class=\'text-[10px] text-slate-400 font-bold uppercase mb-1\'>Ví tài khoản</p><p class=\'text-sm font-black text-primary\'>12,450,000 đ</p></div><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center\'><p class=\'text-[10px] text-slate-400 font-bold uppercase mb-1\'>Ký quỹ</p><p class=\'text-sm font-black text-slate-900\'>5,000,000 đ</p></div><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center\'><p class=\'text-[10px] text-slate-400 font-bold uppercase mb-1\'>Đánh giá</p><p class=\'text-sm font-black text-orange-500\'>4.9 ★</p></div></div></div>')" class="hover:bg-slate-50/30 transition-colors cursor-pointer">
                                     <td class="px-8 py-5">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-500">NL</div>
@@ -318,7 +355,7 @@
                                         <button class="p-2 hover:bg-slate-100 rounded-xl transition-all"><i data-lucide="more-vertical" class="w-5 h-5 text-slate-300"></i></button>
                                     </td>
                                 </tr>
-                                <tr class="hover:bg-slate-50/30 transition-colors">
+                                <tr @click="openModal('Chi tiết tài xế', '<div class=\'space-y-6\'><div class=\'flex items-center gap-4\'><div class=\'w-16 h-16 rounded-3xl bg-red-100 flex items-center justify-center text-red-600 font-black text-2xl\'>TH</div><div><p class=\'font-black text-slate-900 text-xl\'>Trần Hoàng Anh</p><p class=\'text-sm text-slate-400 font-bold\'>0908 765 432 • HTX Vận tải 24h</p></div></div><div class=\'p-4 bg-red-50 rounded-2xl border border-red-100\'><p class=\'text-xs text-red-600 font-bold\'>Tài khoản đang bị khóa do nợ quá hạn đối soát tuần 22.</p></div></div>')" class="hover:bg-slate-50/30 transition-colors cursor-pointer">
                                     <td class="px-8 py-5">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-500">TH</div>
@@ -353,15 +390,15 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                        <div @click="openModal('Doanh thu gộp tuần', '<div class=\'space-y-4\'><div class=\'p-6 bg-slate-900 rounded-3xl text-white\'><p class=\'text-white/50 text-[10px] font-black uppercase tracking-widest\'>Tổng doanh thu</p><p class=\'text-4xl font-black mt-2\'>1.24 tỷ đ</p></div><p class=\'text-sm text-slate-600\'>Dữ liệu được tổng hợp từ tất cả các chuyến xe hoàn tất trong tuần đối soát hiện tại.</p></div>')" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all">
                             <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Doanh thu gộp tuần</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">1.24 <span class="text-lg font-medium text-slate-300">tỷ</span></h3>
                         </div>
-                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                        <div @click="openModal('Phí hệ thống', '<div class=\'space-y-4\'><div class=\'p-6 bg-red-50 rounded-3xl border border-red-100\'><p class=\'text-red-400 text-[10px] font-black uppercase tracking-widest\'>Khấu trừ 15%</p><p class=\'text-4xl font-black text-red-600 mt-2\'>186 trđ</p></div><p class=\'text-sm text-slate-600\'>Bao gồm phí quản lý HTX (10%) và phí nền tảng SACO (5%).</p></div>')" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all">
                             <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Phí hệ thống (15%)</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-tertiary">186 <span class="text-lg font-medium opacity-40">trđ</span></h3>
                         </div>
-                        <div class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm">
+                        <div @click="openModal('Thu nhập ròng', '<div class=\'space-y-4\'><div class=\'p-6 bg-emerald-50 rounded-3xl border border-emerald-100\'><p class=\'text-emerald-500 text-[10px] font-black uppercase tracking-widest\'>Thực nhận tài xế</p><p class=\'text-4xl font-black text-emerald-700 mt-2\'>1.02 tỷ đ</p></div><p class=\'text-sm text-slate-600\'>Số tiền thực tế sẽ được chuyển khoản cho đội ngũ tài xế sau khi trừ các loại biểu phí.</p></div>')" class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-100 transition-all">
                             <p class="text-emerald-500 text-[10px] font-black uppercase tracking-widest">Thu nhập ròng tài xế</p>
                             <h3 class="text-4xl font-black font-headline mt-2 text-emerald-700">1.02 <span class="text-lg font-medium opacity-60">tỷ</span></h3>
                         </div>
@@ -386,8 +423,8 @@
                                     <p class="text-[10px] text-slate-400 font-bold">Yêu cầu lúc 08:30 sáng</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button class="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="check" class="w-5 h-5"></i></button>
-                                    <button class="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                    <button @click="openModal('Phê duyệt rút tiền', '<div class=\'space-y-6\'><div class=\'p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4\'><i data-lucide=\'check-circle\' class=\'text-emerald-600 w-10 h-10\'></i><div><p class=\'font-bold text-emerald-900\'>Xác nhận phê duyệt?</p><p class=\'text-xs text-emerald-600\'>Số tiền: 4,500,000 VNĐ</p></div></div><button class=\'w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100\'>Xác nhận & Chuyển tiền</button></div>')" class="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="check" class="w-5 h-5"></i></button>
+                                    <button @click="openModal('Từ chối rút tiền', '<div class=\'space-y-6\'><div class=\'p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-4\'><i data-lucide=\'x-circle\' class=\'text-red-600 w-10 h-10\'></i><div><p class=\'font-bold text-red-900\'>Từ chối yêu cầu?</p><p class=\'text-xs text-red-600\'>Tài xế: Phạm Văn Đồng</p></div></div><textarea class=\'w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm outline-none\' placeholder=\'Nhập lý do từ chối...\'></textarea><button class=\'w-full py-4 bg-tertiary text-white font-black rounded-2xl shadow-xl shadow-tertiary/20\'>Xác nhận từ chối</button></div>')" class="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -410,16 +447,16 @@
                                 <h4 class="text-lg font-black text-slate-900">Chu kỳ đối soát</h4>
                             </div>
                             <div class="space-y-6">
-                                <div>
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Ngày chốt sổ tuần</label>
-                                    <select class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none">
+                                <div @click="openModal('Chu kỳ đối soát', '<div class=\'space-y-4\'><p class=\'text-sm text-slate-600\'>Thiết lập ngày chốt dữ liệu tài chính hàng tuần.</p><div class=\'p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between\'><span class=\'text-xs font-bold text-slate-400 uppercase\'>Ngày hiện tại</span><span class=\'text-sm font-bold\'>Thứ 3 hàng tuần</span></div></div>')" class="cursor-pointer group">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 group-hover:text-primary transition-colors">Ngày chốt sổ tuần</label>
+                                    <select class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none group-hover:border-primary/30 transition-all">
                                         <option>Thứ 3 hàng tuần</option>
                                         <option>Thứ 4 hàng tuần</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Giờ khóa dữ liệu</label>
-                                    <input type="text" value="17:00" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none">
+                                <div @click="openModal('Giờ khóa dữ liệu', '<div class=\'space-y-4\'><p class=\'text-sm text-slate-600\'>Thời điểm hệ thống tự động ngừng nhận dữ liệu chuyến xe để tính toán đối soát.</p></div>')" class="cursor-pointer group">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 group-hover:text-primary transition-colors">Giờ khóa dữ liệu</label>
+                                    <input type="text" value="17:00" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none group-hover:border-primary/30 transition-all">
                                 </div>
                             </div>
                         </div>
@@ -429,14 +466,14 @@
                                 <h4 class="text-lg font-black text-slate-900">Quản lý biểu phí</h4>
                             </div>
                             <div class="space-y-6">
-                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div @click="openModal('Điều chỉnh biểu phí', '<div class=\'space-y-4\'><p class=\'text-sm text-slate-600\'>Thay đổi phần trăm khấu trừ hoa hồng hệ thống.</p><button class=\'w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100\'>Lưu thay đổi</button></div>')" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:border-emerald-200 transition-all">
                                     <span class="text-sm font-bold text-slate-600">Phí HTX Quản lý</span>
                                     <div class="flex items-center gap-2">
                                         <input type="number" value="15" class="w-16 bg-transparent text-right font-black text-primary outline-none">
                                         <span class="font-bold text-slate-400">%</span>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div @click="openModal('Điều chỉnh biểu phí', '<div class=\'space-y-4\'><p class=\'text-sm text-slate-600\'>Thay đổi phần trăm khấu trừ hoa hồng hệ thống.</p><button class=\'w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100\'>Lưu thay đổi</button></div>')" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:border-emerald-200 transition-all">
                                     <span class="text-sm font-bold text-slate-600">Phí Nền tảng SACO</span>
                                     <div class="flex items-center gap-2">
                                         <input type="number" value="5" class="w-16 bg-transparent text-right font-black text-primary outline-none">
@@ -448,6 +485,13 @@
                     </div>
                 </div>
 
+                <footer class="p-10 border-t border-slate-100 flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    <div class="flex gap-8">
+                        <span>Hệ thống Sentinel v1.0.5</span>
+                        <span>Trạng thái: Hoạt động bình thường</span>
+                    </div>
+                    <span>Copyright by thaoyin</span>
+                </footer>
             </div>
         </main>
     </div>

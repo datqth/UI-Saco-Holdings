@@ -146,6 +146,35 @@ const WITHDRAWAL_REQUESTS: WithdrawalRequest[] = [
 
 // --- Components ---
 
+const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
+      >
+        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 className="text-xl font-black text-slate-900 font-headline">{title}</h3>
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-all">
+            <X size={24} className="text-slate-400" />
+          </button>
+        </div>
+        <div className="p-8">
+          {children}
+        </div>
+        <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+          <button onClick={onClose} className="bg-primary text-white px-8 py-3 rounded-2xl font-bold text-sm hover:shadow-lg transition-all">
+            Đóng
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 const Sidebar = ({ activePage, onPageChange, onLogout }: { activePage: Page, onPageChange: (page: Page) => void, onLogout: () => void }) => {
   const navItems = [
     { id: 'dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
@@ -196,7 +225,7 @@ const Sidebar = ({ activePage, onPageChange, onLogout }: { activePage: Page, onP
   );
 };
 
-const TopBar = ({ title }: { title: string }) => {
+const TopBar = ({ title, onAction }: { title: string, onAction: (title: string, content: React.ReactNode) => void }) => {
   return (
     <header className="fixed top-0 right-0 w-[calc(100%-16rem)] z-30 glass-header flex justify-between items-center h-16 px-8 ml-64 shadow-sm border-b border-slate-100">
       <div className="flex items-center flex-1">
@@ -206,27 +235,106 @@ const TopBar = ({ title }: { title: string }) => {
             className="w-full bg-surface-container-highest/50 border-none rounded-xl pl-10 py-2 text-sm focus:ring-2 focus:ring-primary/40 transition-all outline-none" 
             placeholder="Tìm kiếm tài liệu, đối soát..." 
             type="text" 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                onAction('Kết quả tìm kiếm', (
+                  <div className="space-y-4">
+                    <p className="text-sm text-slate-500 italic">Hiển thị kết quả cho: "{(e.target as HTMLInputElement).value}"</p>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <p className="font-bold text-slate-900">Tài xế: Nguyễn Lâm Nhật</p>
+                      <p className="text-xs text-slate-400">Mã: SACO-TX-9921 • HTX Sài Gòn Xanh</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <p className="font-bold text-slate-900">Chứng từ: #FT9921</p>
+                      <p className="text-xs text-slate-400">Loại: Quyết toán tuần • Ngày: 22/03/2026</p>
+                    </div>
+                  </div>
+                ));
+              }
+            }}
           />
         </div>
       </div>
       
       <div className="flex items-center gap-6">
-        <button className="text-slate-500 hover:text-primary transition-colors relative">
+        <button 
+          onClick={() => onAction('Thông báo', (
+            <div className="space-y-4">
+              {[
+                { title: 'Yêu cầu rút tiền mới', time: '5 phút trước', desc: 'Tài xế Nguyễn Lâm vừa yêu cầu rút 5,200,000đ' },
+                { title: 'Cảnh báo nợ quá hạn', time: '1 giờ trước', desc: 'Có 3 tài xế nợ quá hạn chốt sổ tuần này' },
+                { title: 'Cập nhật hệ thống', time: 'Hôm qua', desc: 'Hệ thống đã cập nhật phiên bản v1.0.5' }
+              ].map((n, i) => (
+                <div key={i} className="flex gap-4 p-3 hover:bg-slate-50 rounded-xl transition-all cursor-pointer">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-1.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{n.title}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{n.time}</p>
+                    <p className="text-xs text-slate-500 mt-1">{n.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          className="text-slate-500 hover:text-primary transition-colors relative"
+        >
           <Bell size={20} />
           <span className="absolute top-0 right-0 w-2 h-2 bg-tertiary rounded-full border border-white"></span>
         </button>
-        <button className="text-slate-500 hover:text-primary transition-colors">
+        <button 
+          onClick={() => onAction('Tin nhắn', (
+            <div className="space-y-4">
+              {[
+                { user: 'Nguyễn Lâm', msg: 'Anh ơi duyệt giúp em yêu cầu rút tiền với ạ', time: '10:30' },
+                { user: 'Trần Hoàng Anh', msg: 'Hồ sơ của em đã được duyệt chưa ạ?', time: '09:15' }
+              ].map((m, i) => (
+                <div key={i} className="flex gap-4 p-3 hover:bg-slate-50 rounded-xl transition-all cursor-pointer">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xs text-slate-500">{m.user.split(' ').map(n => n[0]).join('')}</div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <p className="text-sm font-bold text-slate-900">{m.user}</p>
+                      <p className="text-[10px] text-slate-400">{m.time}</p>
+                    </div>
+                    <p className="text-xs text-slate-500 truncate">{m.msg}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          className="text-slate-500 hover:text-primary transition-colors"
+        >
           <MessageSquare size={20} />
         </button>
         
-        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+        <div 
+          onClick={() => onAction('Thông tin tài khoản', (
+            <div className="text-center space-y-6">
+              <img src="https://picsum.photos/seed/user/200/200" className="w-24 h-24 rounded-3xl mx-auto border-4 border-slate-100 shadow-lg" alt="Avatar" />
+              <div>
+                <p className="text-xl font-black text-slate-900">Quách Thành Đạt</p>
+                <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Administrator</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] text-slate-400 font-black uppercase">Quyền hạn</p>
+                  <p className="text-sm font-bold text-sky-600">Toàn quyền</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] text-slate-400 font-black uppercase">Trạng thái</p>
+                  <p className="text-sm font-bold text-emerald-600">Online</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          className="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer group"
+        >
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-on-surface">Quách Thành Đạt</p>
+            <p className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Quách Thành Đạt</p>
             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Quản trị viên hệ thống</p>
           </div>
           <img 
             alt="User avatar" 
-            className="w-10 h-10 rounded-full object-cover border-2 border-primary-container" 
+            className="w-10 h-10 rounded-full object-cover border-2 border-primary-container group-hover:border-primary transition-all" 
             src="https://picsum.photos/seed/user/100/100" 
           />
         </div>
@@ -235,12 +343,37 @@ const TopBar = ({ title }: { title: string }) => {
   );
 };
 
-const StatCard: React.FC<{ stat: Stat }> = ({ stat }) => {
+const StatCard: React.FC<{ stat: Stat, onAction?: (title: string, content: React.ReactNode) => void }> = ({ stat, onAction }) => {
   const isCritical = stat.variant === 'critical';
   
   return (
-    <div className={cn(
-      "p-6 rounded-xl flex flex-col justify-between transition-all hover:scale-[1.02] shadow-sm relative overflow-hidden",
+    <div 
+      onClick={() => onAction?.(stat.label, (
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className={cn("p-3 rounded-xl", isCritical ? "bg-tertiary-container text-on-tertiary" : "bg-primary-fixed text-primary")}>
+              {stat.icon}
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{stat.label}</p>
+              <p className="text-2xl font-black text-slate-900">{stat.value}</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Chi tiết biến động</h4>
+            <div className="h-32 bg-slate-50 rounded-xl flex items-end justify-between p-4 gap-2">
+              {[40, 70, 45, 90, 65, 80, 55].map((h, i) => (
+                <div key={i} className="w-full bg-primary/20 rounded-t-md relative group">
+                  <div style={{ height: `${h}%` }} className="absolute bottom-0 w-full bg-primary rounded-t-md group-hover:bg-primary-dark transition-all"></div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 italic leading-relaxed">Dữ liệu được tổng hợp từ các chuyến xe hoàn thành trong 24h qua. Tăng trưởng ổn định so với cùng kỳ tuần trước.</p>
+          </div>
+        </div>
+      ))}
+      className={cn(
+      "p-6 rounded-xl flex flex-col justify-between transition-all hover:scale-[1.02] shadow-sm relative overflow-hidden cursor-pointer",
       isCritical 
         ? "bg-tertiary-container/5 border border-tertiary-container" 
         : "bg-surface-container-lowest hover:bg-surface-container-low"
@@ -293,7 +426,7 @@ const StatCard: React.FC<{ stat: Stat }> = ({ stat }) => {
   );
 };
 
-const DashboardView = () => {
+const DashboardView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
   const stats: Stat[] = [
     { label: 'Tổng doanh thu tuần', value: '2.450.000.000 VNĐ', trend: '+12.4%', icon: <Wallet size={20} /> },
     { label: 'Tài xế đang hoạt động', value: '1.284', capacity: '85% Công suất', icon: <Car size={20} /> },
@@ -313,11 +446,44 @@ const DashboardView = () => {
           <p className="text-on-surface-variant text-sm">Cập nhật lúc: 14:32, 24 Tháng 5, 2024</p>
         </div>
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => onAction('Bộ lọc thời gian', (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-500">Chọn khoảng thời gian để xem báo cáo:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {['Hôm nay', 'Tuần này', 'Tháng này', 'Quý này'].map(t => (
+                    <button key={t} className="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold text-slate-900 hover:border-primary transition-all">{t}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-2"
+          >
             <Calendar size={18} />
             Tuần này
           </button>
-          <button className="px-5 py-2.5 rounded-xl text-sm font-semibold primary-gradient text-on-primary flex items-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+          <button 
+            onClick={() => onAction('Xuất báo cáo', (
+              <div className="space-y-6">
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4">
+                  <FileText className="text-emerald-600" size={32} />
+                  <div>
+                    <p className="font-bold text-emerald-900 text-lg">Báo cáo tổng hợp sẵn sàng</p>
+                    <p className="text-xs text-emerald-600">Dữ liệu từ 18/05/2024 - 24/05/2024</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <button className="w-full py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                    <Download size={18} /> Tải xuống Excel (.xlsx)
+                  </button>
+                  <button className="w-full py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                    <Download size={18} /> Tải xuống PDF (.pdf)
+                  </button>
+                </div>
+              </div>
+            ))}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold primary-gradient text-on-primary flex items-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+          >
             <Download size={18} />
             Báo cáo tổng hợp
           </button>
@@ -325,7 +491,7 @@ const DashboardView = () => {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => <StatCard key={i} stat={stat} />)}
+        {stats.map((stat, i) => <StatCard key={i} stat={stat} onAction={onAction} />)}
       </section>
 
       <section className="grid grid-cols-12 gap-8 items-start">
@@ -369,11 +535,29 @@ const DashboardView = () => {
             <h3 className="font-headline text-lg font-bold text-on-surface mb-6">Thao tác nhanh</h3>
             <div className="flex flex-col gap-3">
               {[
-                { label: 'Duyệt hồ sơ mới', sub: '12 hồ sơ đang chờ', icon: Users, color: 'bg-primary-fixed text-primary' },
-                { label: 'Chốt đối soát tuần', sub: 'Kỳ thanh toán 24/05', icon: CheckCircle2, color: 'bg-secondary-container text-on-secondary-container' },
-                { label: 'Xuất dữ liệu MISA', sub: 'Định dạng XML/Excel', icon: Database, color: 'bg-surface-container-highest text-on-surface' },
+                { label: 'Duyệt hồ sơ mới', sub: '12 hồ sơ đang chờ', icon: Users, color: 'bg-primary-fixed text-primary', detail: 'Hệ thống ghi nhận 12 hồ sơ đăng ký mới từ đối tác tài xế. Vui lòng kiểm tra chứng từ và phê duyệt để tài xế có thể bắt đầu hoạt động.' },
+                { label: 'Chốt đối soát tuần', sub: 'Kỳ thanh toán 24/05', icon: CheckCircle2, color: 'bg-secondary-container text-on-secondary-container', detail: 'Dữ liệu đối soát tuần này đã sẵn sàng. Tổng số tiền cần quyết toán là 1.021.392.000 VNĐ cho 1.284 tài xế.' },
+                { label: 'Xuất dữ liệu MISA', sub: 'Định dạng XML/Excel', icon: Database, color: 'bg-surface-container-highest text-on-surface', detail: 'Kết xuất dữ liệu tài chính sang phần mềm kế toán MISA. Đảm bảo tất cả các phiếu chi đã được xác nhận trạng thái "Đã chi".' },
               ].map((action, i) => (
-                <button key={i} className="w-full flex items-center justify-between p-4 bg-surface-container-lowest rounded-xl hover:shadow-md transition-all group">
+                <button 
+                  key={i} 
+                  onClick={() => onAction(action.label, (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", action.color)}>
+                          <action.icon size={24} />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-900 text-lg">{action.label}</p>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{action.sub}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed font-medium">{action.detail}</p>
+                      <button className="w-full py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Thực hiện ngay</button>
+                    </div>
+                  ))}
+                  className="w-full flex items-center justify-between p-4 bg-surface-container-lowest rounded-xl hover:shadow-md transition-all group"
+                >
                   <div className="flex items-center gap-4">
                     <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", action.color)}>
                       <action.icon size={18} />
@@ -400,7 +584,31 @@ const DashboardView = () => {
             <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
               Có 15 tài xế sắp hết hạn phù hiệu. Cần thực hiện rà soát để chuyển đổi sang <strong>Phù hiệu vận tải</strong> mới trước khi hết hạn.
             </p>
-            <button className="text-xs font-extrabold uppercase tracking-widest text-tertiary border border-tertiary px-3 py-2 rounded-lg hover:bg-tertiary hover:text-white transition-all">
+            <button 
+              onClick={() => onAction('Rà soát phù hiệu', (
+                <div className="space-y-6">
+                  <p className="text-sm text-slate-600 leading-relaxed">Danh sách 15 tài xế có phù hiệu hết hạn trong 7 ngày tới. Vui lòng liên hệ và hướng dẫn tài xế hoàn tất thủ tục cấp đổi.</p>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Nguyễn Văn A', plate: '51G-123.45', expiry: '28/05/2024' },
+                      { name: 'Trần Văn B', plate: '51G-678.90', expiry: '29/05/2024' },
+                      { name: 'Lê Văn C', plate: '51G-111.22', expiry: '30/05/2024' }
+                    ].map((d, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{d.name}</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase">{d.plate}</p>
+                        </div>
+                        <span className="text-[10px] font-black text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">{d.expiry}</span>
+                      </div>
+                    ))}
+                    <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">Và 12 tài xế khác...</p>
+                  </div>
+                  <button className="w-full py-4 bg-tertiary text-white font-black rounded-2xl shadow-xl shadow-tertiary/20 hover:scale-[1.02] transition-all">Gửi thông báo nhắc nhở</button>
+                </div>
+              ))}
+              className="text-xs font-extrabold uppercase tracking-widest text-tertiary border border-tertiary px-3 py-2 rounded-lg hover:bg-tertiary hover:text-white transition-all"
+            >
               Xử lý ngay
             </button>
           </div>
@@ -410,7 +618,30 @@ const DashboardView = () => {
       <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
         <div className="px-8 py-6 border-b border-surface-container flex justify-between items-center">
           <h3 className="font-headline text-xl font-bold text-on-surface">Nhật ký hoạt động (Audit Trail)</h3>
-          <button className="text-sm font-semibold text-primary hover:underline">Xem tất cả</button>
+          <button 
+            onClick={() => onAction('Nhật ký hoạt động', (
+              <div className="space-y-6">
+                <p className="text-sm text-slate-500">Lịch sử thao tác chi tiết trên hệ thống trong 24h qua:</p>
+                <div className="space-y-4">
+                  {ACTIVITIES.map((a, i) => (
+                    <div key={i} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="w-10 h-10 bg-primary-fixed-dim rounded-full flex items-center justify-center font-bold text-xs">{a.userInitials}</div>
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <p className="text-sm font-bold text-slate-900">{a.user}</p>
+                          <p className="text-[10px] text-slate-400">{a.time}</p>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1"><span className="font-bold text-primary">{a.action}</span> - {a.target}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Xem tất cả
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -425,7 +656,58 @@ const DashboardView = () => {
             </thead>
             <tbody className="divide-y divide-surface-container">
               {ACTIVITIES.map((activity, i) => (
-                <tr key={i} className="hover:bg-surface-container-low/50 transition-colors">
+                <tr 
+                  key={i} 
+                  onClick={() => onAction('Chi tiết nhật ký', (
+                    <div className="space-y-6">
+                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã nhật ký</span>
+                          <span className="text-sm font-bold text-sky-600">#LOG-20240524-{i}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thời gian</span>
+                          <span className="text-sm font-bold text-slate-900">{activity.time}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Người thực hiện</span>
+                          <span className="text-sm font-bold text-slate-900">{activity.user}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hành động</span>
+                          <span className="text-sm font-bold text-primary">{activity.action}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đối tượng</span>
+                          <span className="text-sm font-bold text-slate-900">{activity.target}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái</span>
+                          <span className={cn(
+                            "px-2 py-1 rounded-full text-[10px] font-black uppercase",
+                            activity.status === 'success' ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                          )}>
+                            {activity.statusText}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-slate-900 rounded-2xl">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Dữ liệu thô (JSON)</p>
+                        <pre className="text-[10px] text-emerald-400 font-mono overflow-x-auto">
+                          {JSON.stringify({
+                            timestamp: activity.time,
+                            actor: activity.user,
+                            action: activity.action,
+                            target: activity.target,
+                            status: activity.status,
+                            ip_address: '192.168.1.' + (10 + i)
+                          }, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  ))}
+                  className="hover:bg-surface-container-low/50 transition-colors cursor-pointer group"
+                >
                   <td className="px-8 py-5 text-sm text-on-surface-variant">{activity.time}</td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-2">
@@ -455,7 +737,7 @@ const DashboardView = () => {
   );
 };
 
-const DriverManagementView = () => {
+const DriverManagementView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -468,11 +750,47 @@ const DriverManagementView = () => {
           <p className="text-on-surface-variant max-w-lg">Theo dõi hoạt động, trạng thái tài chính và phê duyệt hồ sơ đối tác vận hành của SACO Holdings.</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest text-on-surface font-semibold rounded-xl shadow-sm hover:bg-surface-container-low transition-all">
+          <button 
+            onClick={() => onAction('Xuất báo cáo tài xế', (
+              <div className="space-y-6">
+                <div className="p-4 bg-sky-50 rounded-2xl border border-sky-100 flex items-center gap-4">
+                  <FileText className="text-sky-600" size={32} />
+                  <div>
+                    <p className="font-bold text-sky-900 text-lg">Báo cáo danh sách tài xế</p>
+                    <p className="text-xs text-sky-600">Tổng số 1,284 tài xế trong hệ thống</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <button className="w-full py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                    <Download size={18} /> Tải xuống danh sách (.csv)
+                  </button>
+                </div>
+              </div>
+            ))}
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest text-on-surface font-semibold rounded-xl shadow-sm hover:bg-surface-container-low transition-all"
+          >
             <Download size={18} />
             Xuất Báo Cáo
           </button>
-          <button className="flex items-center gap-2 px-5 py-2.5 primary-gradient text-white font-semibold rounded-xl shadow-md hover:opacity-90 transition-all">
+          <button 
+            onClick={() => onAction('Thêm tài xế mới', (
+              <div className="space-y-6">
+                <p className="text-sm text-slate-500">Nhập thông tin cơ bản để bắt đầu quy trình đăng ký đối tác mới:</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Họ và tên</label>
+                    <input type="text" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" placeholder="Nguyễn Văn A" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Số điện thoại</label>
+                    <input type="text" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" placeholder="090x xxx xxx" />
+                  </div>
+                  <button className="w-full py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20 mt-4">Tiếp tục bước 2</button>
+                </div>
+              </div>
+            ))}
+            className="flex items-center gap-2 px-5 py-2.5 primary-gradient text-white font-semibold rounded-xl shadow-md hover:opacity-90 transition-all"
+          >
             <Plus size={18} />
             Thêm Tài Xế
           </button>
@@ -480,7 +798,24 @@ const DriverManagementView = () => {
       </section>
 
       <section className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+        <div 
+          onClick={() => onAction('Tổng số tài xế', (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase">Đang hoạt động</p>
+                  <p className="text-2xl font-black text-emerald-900">1,050</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Ngoại tuyến</p>
+                  <p className="text-2xl font-black text-slate-900">234</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">Tỷ lệ tài xế hoạt động ổn định ở mức 82%. Đội ngũ vận hành đang hỗ trợ các tài xế mới làm quen với hệ thống.</p>
+            </div>
+          ))}
+          className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-container-high transition-all"
+        >
           <div>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng số tài xế</p>
             <h3 className="text-4xl font-extrabold text-primary">1,284</h3>
@@ -489,7 +824,27 @@ const DriverManagementView = () => {
             <Car size={32} />
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+        <div 
+          onClick={() => onAction('Hồ sơ chờ duyệt', (
+            <div className="space-y-6">
+              <p className="text-sm text-slate-500">Danh sách 42 hồ sơ đang trong quy trình thẩm định:</p>
+              <div className="space-y-3">
+                {[
+                  { name: 'Lê Văn Tám', time: '2 giờ trước' },
+                  { name: 'Hoàng Minh Đức', time: '5 giờ trước' },
+                  { name: 'Nguyễn Thị Hoa', time: 'Hôm qua' }
+                ].map((h, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="font-bold text-slate-900 text-sm">{h.name}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{h.time}</span>
+                  </div>
+                ))}
+              </div>
+              <button className="w-full py-3 bg-primary text-white font-bold rounded-xl">Đi tới trang phê duyệt</button>
+            </div>
+          ))}
+          className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-container-high transition-all"
+        >
           <div>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Chờ Duyệt Hồ Sơ</p>
             <h3 className="text-4xl font-extrabold text-primary">42</h3>
@@ -498,7 +853,21 @@ const DriverManagementView = () => {
             <FileText size={32} />
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between border-l-4 border-tertiary">
+        <div 
+          onClick={() => onAction('Cảnh báo ví âm', (
+            <div className="space-y-6">
+              <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-4">
+                <AlertCircle className="text-red-600" size={32} />
+                <div>
+                  <p className="font-bold text-red-900">15 tài xế nợ quá hạn</p>
+                  <p className="text-xs text-red-600">Tổng nợ: 84.200.000 VNĐ</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">Hệ thống đã tự động gửi thông báo nhắc nợ. Cần rà soát và khóa tài khoản nếu không hoàn tất đối soát trong 24h tới.</p>
+            </div>
+          ))}
+          className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between border-l-4 border-tertiary cursor-pointer hover:bg-surface-container-high transition-all"
+        >
           <div>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cảnh Báo Ví Âm</p>
             <h3 className="text-4xl font-extrabold text-tertiary">15</h3>
@@ -594,16 +963,107 @@ const DriverManagementView = () => {
                   <td className="px-6 py-5">
                     <div className="flex justify-center gap-2">
                       {driver.status === 'pending' ? (
-                        <button className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">
+                        <button 
+                          onClick={() => onAction('Phê duyệt hồ sơ', (
+                            <div className="space-y-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-lg">
+                                  {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                                </div>
+                                <div>
+                                  <p className="font-black text-slate-900 text-lg">{driver.name}</p>
+                                  <p className="text-xs text-slate-400 font-bold">ID: {driver.id}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bằng lái</p>
+                                  <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase">Lý lịch tư pháp</p>
+                                  <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-3">
+                                <button className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl">Từ chối</button>
+                                <button className="flex-1 py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20">Phê duyệt</button>
+                              </div>
+                            </div>
+                          ))}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                        >
                           <Verified size={14} />
                           Duyệt
                         </button>
                       ) : (
                         <>
-                          <button className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all">
+                          <button 
+                            onClick={() => onAction('Chi tiết tài xế', (
+                              <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-16 h-16 rounded-3xl bg-primary-fixed flex items-center justify-center text-primary font-black text-2xl">
+                                    {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                                  </div>
+                                  <div>
+                                    <p className="font-black text-slate-900 text-xl">{driver.name}</p>
+                                    <p className="text-sm text-slate-400 font-bold">{driver.phone} • {driver.htx}</p>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ví tài khoản</p>
+                                    <p className="text-sm font-black text-primary">{driver.wallet.toLocaleString()} đ</p>
+                                  </div>
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ký quỹ</p>
+                                    <p className="text-sm font-black text-slate-900">{driver.deposit.toLocaleString()} đ</p>
+                                  </div>
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Đánh giá</p>
+                                    <p className="text-sm font-black text-orange-500">4.9 ★</p>
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Lịch sử chuyến xe gần nhất</h4>
+                                  {[
+                                    { id: 'TRIP-9921', from: 'Sân bay Tân Sơn Nhất', to: 'Quận 1', price: '245.000 đ' },
+                                    { id: 'TRIP-8842', from: 'Quận 7', to: 'Quận 3', price: '182.000 đ' }
+                                  ].map((t, i) => (
+                                    <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                                      <div>
+                                        <p className="text-xs font-bold text-slate-900">{t.id}</p>
+                                        <p className="text-[10px] text-slate-400">{t.from} → {t.to}</p>
+                                      </div>
+                                      <span className="text-xs font-black text-primary">{t.price}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                          >
                             <ArrowRight size={18} />
                           </button>
-                          <button className="p-2 text-tertiary hover:bg-tertiary/10 rounded-lg transition-all">
+                          <button 
+                            onClick={() => onAction(driver.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản', (
+                              <div className="space-y-6">
+                                <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-center gap-4">
+                                  <AlertCircle className="text-orange-600" size={32} />
+                                  <div>
+                                    <p className="font-bold text-orange-900">{driver.status === 'locked' ? 'Xác nhận mở khóa?' : 'Xác nhận khóa tài khoản?'}</p>
+                                    <p className="text-xs text-orange-600">Tài xế: {driver.name}</p>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-slate-600 leading-relaxed">Hành động này sẽ thay đổi quyền truy cập của tài xế vào ứng dụng XanhSM. Vui lòng xác nhận lý do thay đổi trạng thái.</p>
+                                <textarea className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-primary/20" placeholder="Nhập lý do..." />
+                                <button className={cn("w-full py-4 font-black rounded-2xl text-white shadow-xl", driver.status === 'locked' ? "bg-emerald-600 shadow-emerald-100" : "bg-tertiary shadow-tertiary/20")}>
+                                  Xác nhận {driver.status === 'locked' ? 'mở khóa' : 'khóa tài khoản'}
+                                </button>
+                              </div>
+                            ))}
+                            className="p-2 text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
+                          >
                             {driver.status === 'locked' ? <Unlock size={18} /> : <Lock size={18} />}
                           </button>
                         </>
@@ -620,7 +1080,7 @@ const DriverManagementView = () => {
   );
 };
 
-const FinanceView = () => {
+const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
   const [activeTab, setActiveTab] = React.useState<'withdraw' | 'reconcile'>('withdraw');
 
   return (
@@ -665,7 +1125,28 @@ const FinanceView = () => {
       {activeTab === 'withdraw' ? (
         <>
           <section className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-4 bg-primary rounded-xl p-6 text-white shadow-xl flex flex-col justify-between">
+            <div 
+              onClick={() => onAction('Tổng chờ duyệt', (
+                <div className="space-y-6">
+                  <p className="text-sm text-slate-500">Tổng số tiền đang chờ phê duyệt thanh toán cho tài xế:</p>
+                  <div className="p-6 bg-primary rounded-3xl text-white shadow-xl">
+                    <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Dòng tiền chờ chi</p>
+                    <p className="text-4xl font-black mt-2">1,240.5 trđ</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                      <span className="text-xs font-bold text-slate-900">Yêu cầu hôm nay</span>
+                      <span className="text-xs font-black text-primary">420.0 trđ</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                      <span className="text-xs font-bold text-slate-900">Yêu cầu tồn đọng</span>
+                      <span className="text-xs font-black text-primary">820.5 trđ</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              className="col-span-12 md:col-span-4 bg-primary rounded-xl p-6 text-white shadow-xl flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-all"
+            >
               <div>
                 <p className="text-white/80 text-sm font-medium uppercase tracking-widest">TỔNG CHỜ DUYỆT</p>
                 <p className="font-headline text-4xl font-extrabold mt-2">1,240.5 <span className="text-xl font-normal opacity-70">trđ</span></p>
@@ -677,11 +1158,28 @@ const FinanceView = () => {
             </div>
             <div className="col-span-12 md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { label: 'Đã chi trong tháng', value: '842.0 trđ', icon: CheckCircle2, color: 'text-secondary bg-secondary/10' },
-                { label: 'Bị từ chối', value: '15 yêu cầu', icon: X, color: 'text-tertiary bg-tertiary/10' },
-                { label: 'Đang chờ xử lý', value: '32 yêu cầu', icon: TrendingUp, color: 'text-primary bg-primary/10', border: 'border-l-4 border-primary' },
+                { label: 'Đã chi trong tháng', value: '842.0 trđ', icon: CheckCircle2, color: 'text-secondary bg-secondary/10', detail: 'Tổng số tiền đã được chuyển khoản thành công cho tài xế trong tháng này.' },
+                { label: 'Bị từ chối', value: '15 yêu cầu', icon: X, color: 'text-tertiary bg-tertiary/10', detail: 'Các yêu cầu rút tiền không hợp lệ hoặc sai thông tin ngân hàng.' },
+                { label: 'Đang chờ xử lý', value: '32 yêu cầu', icon: TrendingUp, color: 'text-primary bg-primary/10', border: 'border-l-4 border-primary', detail: 'Các yêu cầu mới phát sinh đang chờ bộ phận tài chính phê duyệt.' },
               ].map((item, i) => (
-                <div key={i} className={cn("bg-surface-container-low p-6 rounded-xl", item.border)}>
+                <div 
+                  key={i} 
+                  onClick={() => onAction(item.label, (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", item.color)}>
+                          <item.icon size={24} />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-900 text-lg">{item.label}</p>
+                          <p className="text-2xl font-black text-primary">{item.value}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed font-medium">{item.detail}</p>
+                    </div>
+                  ))}
+                  className={cn("bg-surface-container-low p-6 rounded-xl cursor-pointer hover:bg-surface-container-high transition-all", item.border)}
+                >
                   <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center mb-4", item.color)}>
                     <item.icon size={20} />
                   </div>
@@ -774,16 +1272,77 @@ const FinanceView = () => {
                       <td className="px-6 py-5 text-right">
                         {req.status === 'pending' && (
                           <div className="flex justify-end gap-2">
-                            <button className="p-1.5 hover:bg-secondary-container/20 text-secondary rounded-lg transition-colors">
+                            <button 
+                              onClick={() => onAction('Phê duyệt rút tiền', (
+                                <div className="space-y-6">
+                                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4">
+                                    <CheckCircle2 className="text-emerald-600" size={32} />
+                                    <div>
+                                      <p className="font-bold text-emerald-900">Xác nhận phê duyệt?</p>
+                                      <p className="text-xs text-emerald-600">Số tiền: {req.amount.toLocaleString()} VNĐ</p>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Thông tin thụ hưởng</p>
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                      <p className="text-sm font-bold text-slate-900">{req.driverName}</p>
+                                      <p className="text-xs text-slate-500">{req.bank} • {req.account}</p>
+                                    </div>
+                                  </div>
+                                  <button className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100">Phê duyệt & Chuyển sang "Đã duyệt"</button>
+                                </div>
+                              ))}
+                              className="p-1.5 hover:bg-secondary-container/20 text-secondary rounded-lg transition-colors"
+                            >
                               <CheckCircle2 size={18} />
                             </button>
-                            <button className="p-1.5 hover:bg-tertiary-container/20 text-tertiary rounded-lg transition-colors">
+                            <button 
+                              onClick={() => onAction('Từ chối rút tiền', (
+                                <div className="space-y-6">
+                                  <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-4">
+                                    <X className="text-red-600" size={32} />
+                                    <div>
+                                      <p className="font-bold text-red-900">Từ chối yêu cầu?</p>
+                                      <p className="text-xs text-red-600">Tài xế: {req.driverName}</p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Lý do từ chối</label>
+                                    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none">
+                                      <option>Sai thông tin ngân hàng</option>
+                                      <option>Số dư khả dụng không đủ</option>
+                                      <option>Tài khoản đang bị khóa</option>
+                                      <option>Lý do khác</option>
+                                    </select>
+                                  </div>
+                                  <button className="w-full py-4 bg-tertiary text-white font-black rounded-2xl shadow-xl shadow-tertiary/20">Xác nhận từ chối</button>
+                                </div>
+                              ))}
+                              className="p-1.5 hover:bg-tertiary-container/20 text-tertiary rounded-lg transition-colors"
+                            >
                               <X size={18} />
                             </button>
                           </div>
                         )}
                         {req.status === 'approved' && (
-                          <button className="bg-primary text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 ml-auto hover:shadow-lg transition-all active:scale-[0.98]">
+                          <button 
+                            onClick={() => onAction('Xác nhận đã chi', (
+                              <div className="space-y-6">
+                                <div className="p-6 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden">
+                                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl rounded-full"></div>
+                                  <p className="text-white/50 text-[10px] font-black uppercase tracking-widest">Lệnh chuyển tiền</p>
+                                  <p className="text-3xl font-black mt-2">{req.amount.toLocaleString()} đ</p>
+                                  <div className="mt-8 pt-6 border-t border-white/10 space-y-2">
+                                    <p className="text-xs font-bold">{req.driverName}</p>
+                                    <p className="text-[10px] text-white/50">{req.bank} • {req.account}</p>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-500 italic text-center">Vui lòng chỉ xác nhận sau khi đã thực hiện chuyển khoản thành công trên ứng dụng ngân hàng hoặc MISA.</p>
+                                <button className="w-full py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20">Xác nhận Đã chi</button>
+                              </div>
+                            ))}
+                            className="bg-primary text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 ml-auto hover:shadow-lg transition-all active:scale-[0.98]"
+                          >
                             <Receipt size={14} />
                             Xác nhận đã chi
                           </button>
@@ -914,7 +1473,7 @@ const FinanceView = () => {
 };
 
 
-const SettingsView = () => {
+const SettingsView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -938,9 +1497,26 @@ const SettingsView = () => {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-10">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Chu kỳ đối soát tuần</label>
-                <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div 
+                onClick={() => onAction('Chu kỳ đối soát', (
+                  <div className="space-y-6">
+                    <p className="text-sm text-slate-500">Thiết lập ngày bắt đầu và kết thúc chu kỳ tính toán doanh thu:</p>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400 uppercase">Ngày bắt đầu</span>
+                        <span className="text-sm font-black text-sky-600">Thứ 4 hàng tuần</span>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400 uppercase">Ngày kết thúc</span>
+                        <span className="text-sm font-black text-sky-600">Thứ 3 tuần sau</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                className="cursor-pointer group"
+              >
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 group-hover:text-primary transition-colors">Chu kỳ đối soát tuần</label>
+                <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-slate-100 group-hover:border-primary/30 transition-all">
                   <span className="text-sm font-bold text-sky-900">Thứ 4</span>
                   <ArrowRight size={16} className="text-slate-300" />
                   <span className="text-sm font-bold text-sky-600">Thứ 3</span>
@@ -973,13 +1549,30 @@ const SettingsView = () => {
                 { label: 'Phí HTX', value: 15, desc: 'Áp dụng cho tất cả chuyến xe thuộc các hợp tác xã liên kết.' },
                 { label: 'Phí nền tảng', value: 5, desc: 'Phí duy trì hạ tầng SACO và dịch vụ hỗ trợ tài xế.' },
               ].map((fee, i) => (
-                <div key={i} className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-emerald-200 transition-colors group">
+                <div 
+                  key={i} 
+                  onClick={() => onAction('Điều chỉnh ' + fee.label, (
+                    <div className="space-y-6">
+                      <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
+                        <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Biểu phí hiện tại</p>
+                        <p className="text-4xl font-black text-emerald-900 mt-2">{fee.value}%</p>
+                      </div>
+                      <div className="space-y-4">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phần trăm mới (%)</label>
+                        <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-2xl font-black text-sky-900 outline-none focus:ring-2 focus:ring-emerald-100" defaultValue={fee.value} />
+                        <p className="text-xs text-slate-500 italic leading-relaxed">Lưu ý: Thay đổi biểu phí sẽ áp dụng cho tất cả các chuyến xe phát sinh sau thời điểm lưu cấu hình.</p>
+                      </div>
+                      <button className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100">Lưu thay đổi biểu phí</button>
+                    </div>
+                  ))}
+                  className="p-6 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-emerald-200 transition-colors group cursor-pointer"
+                >
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-sm font-bold text-sky-900">{fee.label}</span>
                     <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold tracking-tight uppercase">Đang áp dụng</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <input className="bg-transparent border-none text-5xl font-black p-0 w-24 text-sky-900 focus:ring-0" type="number" defaultValue={fee.value} />
+                    <span className="text-5xl font-black text-sky-900">{fee.value}</span>
                     <span className="text-2xl font-bold text-slate-300">%</span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-4 leading-relaxed font-medium">{fee.desc}</p>
@@ -1104,6 +1697,15 @@ const SettingsView = () => {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [activePage, setActivePage] = React.useState<Page>('dashboard');
+  const [modal, setModal] = React.useState<{ isOpen: boolean, title: string, content: React.ReactNode }>({
+    isOpen: false,
+    title: '',
+    content: null
+  });
+
+  const openModal = (title: string, content: React.ReactNode) => {
+    setModal({ isOpen: true, title, content });
+  };
 
   if (!isLoggedIn) {
     return (
@@ -1166,6 +1768,10 @@ export default function App() {
           <span>•</span>
           <span>MISA Integrated</span>
         </div>
+
+        <div className="absolute bottom-4 right-4 text-[10px] font-black text-slate-800 uppercase tracking-widest">
+          Copyright by thaoyin
+        </div>
       </div>
     );
   }
@@ -1174,23 +1780,58 @@ export default function App() {
     <div className="min-h-screen bg-surface selection-primary">
       <Sidebar activePage={activePage} onPageChange={setActivePage} onLogout={() => setIsLoggedIn(false)} />
       
-      <main className="ml-64 min-h-screen">
-        <TopBar title={activePage} />
+      <main className="ml-64 min-h-screen relative">
+        <TopBar title={activePage} onAction={openModal} />
         
         <div className="pt-24 pb-12 px-8">
           <AnimatePresence mode="wait">
-            {activePage === 'dashboard' && <DashboardView key="dashboard" />}
-            {activePage === 'drivers' && <DriverManagementView key="drivers" />}
-            {activePage === 'finance' && <FinanceView key="finance" />}
-            {activePage === 'settings' && <SettingsView key="settings" />}
+            {activePage === 'dashboard' && <DashboardView key="dashboard" onAction={openModal} />}
+            {activePage === 'drivers' && <DriverManagementView key="drivers" onAction={openModal} />}
+            {activePage === 'finance' && <FinanceView key="finance" onAction={openModal} />}
+            {activePage === 'settings' && <SettingsView key="settings" onAction={openModal} />}
           </AnimatePresence>
+        </div>
+
+        <div className="fixed bottom-4 right-4 text-[10px] font-black text-slate-300 uppercase tracking-widest pointer-events-none z-50">
+          Copyright by thaoyin
         </div>
       </main>
       
       {/* Contextual FAB */}
-      <button className="fixed bottom-8 right-8 w-14 h-14 primary-gradient text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+      <button 
+        onClick={() => openModal('Tạo mới', (
+          <div className="space-y-6">
+            <p className="text-sm text-slate-500">Chọn loại dữ liệu bạn muốn tạo mới trong hệ thống:</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary transition-all text-left group">
+                <Users size={24} className="text-primary mb-2" />
+                <p className="font-bold text-slate-900">Tài xế</p>
+                <p className="text-[10px] text-slate-400">Đăng ký đối tác mới</p>
+              </button>
+              <button className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary transition-all text-left group">
+                <Wallet size={24} className="text-secondary mb-2" />
+                <p className="font-bold text-slate-900">Chứng từ</p>
+                <p className="text-[10px] text-slate-400">Tạo phiếu chi/thu</p>
+              </button>
+            </div>
+          </div>
+        ))}
+        className="fixed bottom-8 right-8 w-14 h-14 primary-gradient text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"
+      >
         {activePage === 'settings' ? <Save size={24} /> : <Plus size={24} />}
       </button>
+
+      <AnimatePresence>
+        {modal.isOpen && (
+          <Modal 
+            isOpen={modal.isOpen} 
+            onClose={() => setModal({ ...modal, isOpen: false })} 
+            title={modal.title}
+          >
+            {modal.content}
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
