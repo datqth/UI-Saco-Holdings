@@ -28,7 +28,10 @@ import {
   ArrowRight,
   Mail,
   Save,
-  X
+  X,
+  UserPlus,
+  DollarSign,
+  Eye
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -65,15 +68,19 @@ interface Activity {
   statusText: string;
 }
 
+type DriverStatus = 'PENDING' | 'APPROVED' | 'PENDING_DEPOSIT' | 'ACTIVE' | 'APP_LOCKED' | 'INACTIVE' | 'REJECTED';
+
 interface Driver {
   id: string;
   name: string;
   phone: string;
   htx: string;
-  status: 'active' | 'locked' | 'pending';
+  status: DriverStatus;
   wallet: number;
   deposit: number;
   expiry: string;
+  xsm_driver_id?: string;
+  registrationDate: string;
 }
 
 interface WithdrawalRequest {
@@ -131,10 +138,12 @@ const ACTIVITIES: Activity[] = [
 ];
 
 const DRIVERS: Driver[] = [
-  { id: 'TX-2940', name: 'Nguyễn Văn An', phone: '0901 234 567', htx: 'HTX Sài Gòn', status: 'active', wallet: 1250000, deposit: 10000000, expiry: '15/08/2026' },
-  { id: 'TX-1102', name: 'Trần Hữu Hùng', phone: '0988 776 655', htx: 'HTX Thủ Đô', status: 'active', wallet: -450000, deposit: 10000000, expiry: '12/11/2025' },
-  { id: 'TX-3334', name: 'Lê Minh Tâm', phone: '0912 333 444', htx: 'HTX Miền Tây', status: 'pending', wallet: 0, deposit: 5000000, expiry: '20/12/2027' },
-  { id: 'TX-5556', name: 'Phạm Đức Huy', phone: '0944 555 666', htx: 'HTX Sài Gòn', status: 'locked', wallet: 2800000, deposit: 10000000, expiry: 'Đã hết hạn' },
+  { id: 'TX-2940', name: 'Nguyễn Văn An', phone: '0901 234 567', htx: 'HTX Sài Gòn', status: 'ACTIVE', wallet: 1250000, deposit: 10000000, expiry: '15/08/2026', xsm_driver_id: 'XSM-SACO-001', registrationDate: '10/01/2024' },
+  { id: 'TX-1102', name: 'Trần Hữu Hùng', phone: '0988 776 655', htx: 'HTX Thủ Đô', status: 'APP_LOCKED', wallet: -450000, deposit: 10000000, expiry: '12/11/2025', xsm_driver_id: 'XSM-SACO-002', registrationDate: '15/02/2024' },
+  { id: 'TX-3334', name: 'Lê Minh Tâm', phone: '0912 333 444', htx: 'HTX Miền Tây', status: 'PENDING', wallet: 0, deposit: 5000000, expiry: '20/12/2027', registrationDate: '20/03/2024' },
+  { id: 'TX-5556', name: 'Phạm Đức Huy', phone: '0944 555 666', htx: 'HTX Sài Gòn', status: 'INACTIVE', wallet: 2800000, deposit: 10000000, expiry: 'Đã hết hạn', xsm_driver_id: 'XSM-SACO-003', registrationDate: '05/12/2023' },
+  { id: 'TX-6677', name: 'Hoàng Văn Nam', phone: '0977 111 222', htx: 'HTX Sài Gòn', status: 'APPROVED', wallet: 0, deposit: 0, expiry: '01/01/2027', registrationDate: '21/03/2024' },
+  { id: 'TX-8899', name: 'Vũ Minh Tuấn', phone: '0966 333 444', htx: 'HTX Thủ Đô', status: 'PENDING_DEPOSIT', wallet: 0, deposit: 2000000, expiry: '15/05/2027', xsm_driver_id: 'XSM-SACO-005', registrationDate: '18/03/2024' },
 ];
 
 const WITHDRAWAL_REQUESTS: WithdrawalRequest[] = [
@@ -175,7 +184,7 @@ const Modal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose:
   );
 };
 
-const Sidebar = ({ activePage, onPageChange, onLogout }: { activePage: Page, onPageChange: (page: Page) => void, onLogout: () => void }) => {
+const Sidebar = ({ activePage, onPageChange, onLogout, onAction }: { activePage: Page, onPageChange: (page: Page) => void, onLogout: () => void, onAction: (title: string, content: React.ReactNode) => void }) => {
   const navItems = [
     { id: 'dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
     { id: 'drivers', label: 'Quản lý tài xế', icon: Users },
@@ -209,12 +218,60 @@ const Sidebar = ({ activePage, onPageChange, onLogout }: { activePage: Page, onP
       </nav>
 
       <div className="flex flex-col gap-2 border-t border-slate-100 pt-6">
-        <button className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition-colors duration-200 font-headline text-sm tracking-tight text-left rounded-lg">
+        <button 
+          onClick={() => onAction('Trung tâm hỗ trợ', (
+            <div className="space-y-6">
+              <div className="p-6 bg-sky-50 rounded-3xl border border-sky-100 flex items-center gap-6">
+                <div className="w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                  <HelpCircle size={32} />
+                </div>
+                <div>
+                  <p className="text-xl font-black text-sky-900">Bạn cần hỗ trợ?</p>
+                  <p className="text-sm text-sky-600">Tổng đài hỗ trợ đối tác 24/7</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                  <span className="text-sm font-bold text-slate-900">Hotline Kỹ thuật</span>
+                  <span className="text-sm font-black text-sky-600">1900 6789</span>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                  <span className="text-sm font-bold text-slate-900">Hotline Tài chính</span>
+                  <span className="text-sm font-black text-sky-600">1900 6790</span>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                  <span className="text-sm font-bold text-slate-900">Email hỗ trợ</span>
+                  <span className="text-sm font-black text-sky-600">support@saco.vn</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition-colors duration-200 font-headline text-sm tracking-tight text-left rounded-lg"
+        >
           <HelpCircle size={20} />
           <span>Hỗ trợ</span>
         </button>
         <button 
-          onClick={onLogout}
+          onClick={() => onAction('Xác nhận đăng xuất', (
+            <div className="space-y-6">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                <LogOut className="text-tertiary" size={32} />
+                <div>
+                  <p className="font-bold text-slate-900">Bạn muốn đăng xuất?</p>
+                  <p className="text-xs text-slate-400">Phiên làm việc của bạn sẽ kết thúc.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button className="flex-1 py-4 bg-slate-100 text-slate-600 font-black rounded-2xl">Hủy</button>
+                <button 
+                  onClick={onLogout}
+                  className="flex-1 py-4 bg-tertiary text-white font-black rounded-2xl shadow-xl shadow-tertiary/20"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            </div>
+          ))}
           className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition-colors duration-200 font-headline text-sm tracking-tight text-left rounded-lg"
         >
           <LogOut size={20} />
@@ -893,9 +950,13 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
             <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">Trạng Thái</label>
             <select className="w-full bg-surface-container-highest border-none rounded-lg text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary/40 outline-none">
               <option>Tất cả trạng thái</option>
-              <option>Hoạt động</option>
-              <option>Bị khóa</option>
-              <option>Chờ duyệt</option>
+              <option>PENDING - Chờ duyệt</option>
+              <option>APPROVED - Đã duyệt</option>
+              <option>PENDING_DEPOSIT - Chờ ký quỹ</option>
+              <option>ACTIVE - Hoạt động</option>
+              <option>APP_LOCKED - Khóa App (Ví âm)</option>
+              <option>INACTIVE - Ngưng hoạt động</option>
+              <option>REJECTED - Từ chối</option>
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
@@ -923,7 +984,86 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
             </thead>
             <tbody className="divide-y divide-surface-container">
               {DRIVERS.map((driver) => (
-                <tr key={driver.id} className="hover:bg-surface-container-low/50 transition-colors">
+                <tr 
+                  key={driver.id} 
+                  onClick={() => onAction('Chi tiết tài xế', (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-3xl shadow-lg">
+                          {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                        </div>
+                        <div>
+                          <p className="text-2xl font-black text-slate-900">{driver.name}</p>
+                          <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Mã đối tác: {driver.id}</p>
+                          <div className="mt-2 flex gap-2">
+                            <span className={cn(
+                              "px-3 py-1 text-[10px] font-black uppercase rounded-full",
+                              driver.status === 'ACTIVE' ? "bg-emerald-100 text-emerald-700" :
+                              driver.status === 'PENDING' ? "bg-amber-100 text-amber-700" :
+                              driver.status === 'APPROVED' ? "bg-blue-100 text-blue-700" :
+                              driver.status === 'PENDING_DEPOSIT' ? "bg-orange-100 text-orange-700" :
+                              driver.status === 'APP_LOCKED' ? "bg-red-100 text-red-700" :
+                              driver.status === 'REJECTED' ? "bg-slate-200 text-slate-600" :
+                              "bg-slate-100 text-slate-500"
+                            )}>
+                              {driver.status}
+                            </span>
+                            <span className="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-slate-100 text-slate-500">
+                              {driver.htx}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Số dư ví</p>
+                          <p className={cn("text-xl font-black", driver.wallet < 0 ? "text-tertiary" : "text-primary")}>
+                            {driver.wallet.toLocaleString()} VNĐ
+                          </p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Tiền ký quỹ</p>
+                          <p className="text-xl font-black text-slate-900">{driver.deposit.toLocaleString()} VNĐ</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Thông tin vận hành</h4>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-900">XSM Driver ID</span>
+                            <span className="text-sm font-medium text-slate-600">{driver.xsm_driver_id || 'Chưa cập nhật'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-900">Hết hạn phù hiệu</span>
+                            <span className="text-sm font-medium text-slate-600">{driver.expiry}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-900">Ngày đăng ký</span>
+                            <span className="text-sm font-medium text-slate-600">{driver.registrationDate}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Lịch sử chuyến đi gần đây</h4>
+                        <div className="space-y-2">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="flex justify-between items-center p-3 bg-white rounded-xl border border-slate-100">
+                              <div>
+                                <p className="text-xs font-bold text-slate-900">Chuyến xe #{8821 + i}</p>
+                                <p className="text-[10px] text-slate-400">22/03/2026 • 14:2{i}</p>
+                              </div>
+                              <span className="text-xs font-black text-emerald-600">+{ (120000 + i * 5000).toLocaleString() }đ</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  className="hover:bg-surface-container-low/50 transition-colors cursor-pointer"
+                >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold">
@@ -939,10 +1079,15 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
                   <td className="px-6 py-5">
                     <span className={cn(
                       "px-3 py-1 text-[10px] font-bold uppercase rounded-full",
-                      driver.status === 'active' ? "bg-secondary-container text-on-secondary-container" :
-                      driver.status === 'pending' ? "bg-primary-fixed text-primary" : "bg-surface-variant text-on-surface-variant"
+                      driver.status === 'ACTIVE' ? "bg-emerald-100 text-emerald-700" :
+                      driver.status === 'PENDING' ? "bg-amber-100 text-amber-700" :
+                      driver.status === 'APPROVED' ? "bg-blue-100 text-blue-700" :
+                      driver.status === 'PENDING_DEPOSIT' ? "bg-orange-100 text-orange-700" :
+                      driver.status === 'APP_LOCKED' ? "bg-red-100 text-red-700" :
+                      driver.status === 'REJECTED' ? "bg-slate-200 text-slate-600" :
+                      "bg-slate-100 text-slate-500"
                     )}>
-                      {driver.status === 'active' ? 'Hoạt động' : driver.status === 'pending' ? 'Chờ duyệt' : 'Bị khóa'}
+                      {driver.status}
                     </span>
                   </td>
                   <td className={cn(
@@ -962,111 +1107,154 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex justify-center gap-2">
-                      {driver.status === 'pending' ? (
+                      {driver.status === 'PENDING' && (
                         <button 
-                          onClick={() => onAction('Phê duyệt hồ sơ', (
-                            <div className="space-y-6">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-lg">
-                                  {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAction('Phê duyệt hồ sơ', (
+                              <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-lg">
+                                    {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                                  </div>
+                                  <div>
+                                    <p className="font-black text-slate-900 text-lg">{driver.name}</p>
+                                    <p className="text-xs text-slate-400 font-bold">ID: {driver.id}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="font-black text-slate-900 text-lg">{driver.name}</p>
-                                  <p className="text-xs text-slate-400 font-bold">ID: {driver.id}</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Bằng lái</p>
+                                    <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
+                                  </div>
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Lý lịch tư pháp</p>
+                                    <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-3">
+                                  <button className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl">Từ chối</button>
+                                  <button className="flex-1 py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20">Phê duyệt</button>
                                 </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bằng lái</p>
-                                  <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                  <p className="text-[10px] text-slate-400 font-bold uppercase">Lý lịch tư pháp</p>
-                                  <p className="text-sm font-bold text-emerald-600">Đã xác minh</p>
-                                </div>
-                              </div>
-                              <div className="flex gap-3">
-                                <button className="flex-1 py-4 bg-slate-100 text-slate-400 font-black rounded-2xl">Từ chối</button>
-                                <button className="flex-1 py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20">Phê duyệt</button>
-                              </div>
-                            </div>
-                          ))}
+                            ));
+                          }}
                           className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
                         >
                           <Verified size={14} />
                           Duyệt
                         </button>
-                      ) : (
-                        <>
-                          <button 
-                            onClick={() => onAction('Chi tiết tài xế', (
+                      )}
+                      {driver.status === 'APPROVED' && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAction('Nhập mã Partner XanhSM', (
                               <div className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-16 h-16 rounded-3xl bg-primary-fixed flex items-center justify-center text-primary font-black text-2xl">
-                                    {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
-                                  </div>
+                                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-4">
+                                  <Database className="text-blue-600" size={32} />
                                   <div>
-                                    <p className="font-black text-slate-900 text-xl">{driver.name}</p>
-                                    <p className="text-sm text-slate-400 font-bold">{driver.phone} • {driver.htx}</p>
+                                    <p className="font-bold text-blue-900">Liên kết tài khoản XanhSM</p>
+                                    <p className="text-xs text-blue-600">Tài xế: {driver.name}</p>
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4">
-                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ví tài khoản</p>
-                                    <p className="text-sm font-black text-primary">{driver.wallet.toLocaleString()} đ</p>
-                                  </div>
-                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ký quỹ</p>
-                                    <p className="text-sm font-black text-slate-900">{driver.deposit.toLocaleString()} đ</p>
-                                  </div>
-                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Đánh giá</p>
-                                    <p className="text-sm font-black text-orange-500">4.9 ★</p>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Lịch sử chuyến xe gần nhất</h4>
-                                  {[
-                                    { id: 'TRIP-9921', from: 'Sân bay Tân Sơn Nhất', to: 'Quận 1', price: '245.000 đ' },
-                                    { id: 'TRIP-8842', from: 'Quận 7', to: 'Quận 3', price: '182.000 đ' }
-                                  ].map((t, i) => (
-                                    <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
-                                      <div>
-                                        <p className="text-xs font-bold text-slate-900">{t.id}</p>
-                                        <p className="text-[10px] text-slate-400">{t.from} → {t.to}</p>
-                                      </div>
-                                      <span className="text-xs font-black text-primary">{t.price}</span>
-                                    </div>
-                                  ))}
+                                <div className="space-y-4">
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Mã Partner XanhSM (xsm_driver_id)</label>
+                                  <input type="text" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" placeholder="XSM-SACO-XXXX" />
+                                  <p className="text-[10px] text-slate-400 italic">Sau khi nhập mã, trạng thái sẽ chuyển sang PENDING_DEPOSIT.</p>
+                                  <button className="w-full py-4 primary-gradient text-white font-black rounded-2xl shadow-xl shadow-primary/20">Xác nhận liên kết</button>
                                 </div>
                               </div>
-                            ))}
-                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
-                          >
-                            <ArrowRight size={18} />
-                          </button>
-                          <button 
-                            onClick={() => onAction(driver.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản', (
+                            ));
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all"
+                        >
+                          <Database size={14} />
+                          Mã XSM
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => onAction('Chi tiết tài xế', (
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 rounded-3xl bg-primary-fixed flex items-center justify-center text-primary font-black text-2xl">
+                                {driver.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                              </div>
+                              <div>
+                                <p className="font-black text-slate-900 text-xl">{driver.name}</p>
+                                <p className="text-sm text-slate-400 font-bold">{driver.phone} • {driver.htx}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Mã XanhSM</p>
+                                <p className="text-sm font-black text-sky-600">{driver.xsm_driver_id || 'Chưa có'}</p>
+                              </div>
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ngày đăng ký</p>
+                                <p className="text-sm font-black text-slate-900">{driver.registrationDate}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ví tài khoản</p>
+                                <p className="text-sm font-black text-primary">{driver.wallet.toLocaleString()} đ</p>
+                              </div>
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Ký quỹ</p>
+                                <p className="text-sm font-black text-slate-900">{driver.deposit.toLocaleString()} đ</p>
+                              </div>
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Đánh giá</p>
+                                <p className="text-sm font-black text-orange-500">4.9 ★</p>
+                              </div>
+                            </div>
+                            <div className="space-y-3">
+                              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Lịch sử chuyến xe gần nhất</h4>
+                              {[
+                                { id: 'TRIP-9921', from: 'Sân bay Tân Sơn Nhất', to: 'Quận 1', price: '245.000 đ' },
+                                { id: 'TRIP-8842', from: 'Quận 7', to: 'Quận 3', price: '182.000 đ' }
+                              ].map((t, i) => (
+                                <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                                  <div>
+                                    <p className="text-xs font-bold text-slate-900">{t.id}</p>
+                                    <p className="text-[10px] text-slate-400">{t.from} → {t.to}</p>
+                                  </div>
+                                  <span className="text-xs font-black text-primary">{t.price}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                      >
+                        <ArrowRight size={18} />
+                      </button>
+                      {(driver.status === 'ACTIVE' || driver.status === 'APP_LOCKED') && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAction(driver.status === 'APP_LOCKED' ? 'Mở khóa tài khoản' : 'Khóa tài khoản', (
                               <div className="space-y-6">
                                 <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-center gap-4">
                                   <AlertCircle className="text-orange-600" size={32} />
                                   <div>
-                                    <p className="font-bold text-orange-900">{driver.status === 'locked' ? 'Xác nhận mở khóa?' : 'Xác nhận khóa tài khoản?'}</p>
+                                    <p className="font-bold text-orange-900">{driver.status === 'APP_LOCKED' ? 'Xác nhận mở khóa?' : 'Xác nhận khóa tài khoản?'}</p>
                                     <p className="text-xs text-orange-600">Tài xế: {driver.name}</p>
                                   </div>
                                 </div>
                                 <p className="text-sm text-slate-600 leading-relaxed">Hành động này sẽ thay đổi quyền truy cập của tài xế vào ứng dụng XanhSM. Vui lòng xác nhận lý do thay đổi trạng thái.</p>
                                 <textarea className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-primary/20" placeholder="Nhập lý do..." />
-                                <button className={cn("w-full py-4 font-black rounded-2xl text-white shadow-xl", driver.status === 'locked' ? "bg-emerald-600 shadow-emerald-100" : "bg-tertiary shadow-tertiary/20")}>
-                                  Xác nhận {driver.status === 'locked' ? 'mở khóa' : 'khóa tài khoản'}
+                                <button className={cn("w-full py-4 font-black rounded-2xl text-white shadow-xl", driver.status === 'APP_LOCKED' ? "bg-emerald-600 shadow-emerald-100" : "bg-tertiary shadow-tertiary/20")}>
+                                  Xác nhận {driver.status === 'APP_LOCKED' ? 'mở khóa' : 'khóa tài khoản'}
                                 </button>
                               </div>
-                            ))}
-                            className="p-2 text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
-                          >
-                            {driver.status === 'locked' ? <Unlock size={18} /> : <Lock size={18} />}
-                          </button>
-                        </>
+                            ));
+                          }}
+                          className="p-2 text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
+                        >
+                          {driver.status === 'APP_LOCKED' ? <Unlock size={18} /> : <Lock size={18} />}
+                        </button>
                       )}
                     </div>
                   </td>
@@ -1232,7 +1420,60 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
                 </thead>
                 <tbody className="divide-y divide-surface-container-low">
                   {WITHDRAWAL_REQUESTS.map((req) => (
-                    <tr key={req.id} className={cn("hover:bg-surface-container-low/20 transition-colors", req.status === 'approved' && "bg-secondary-container/5")}>
+                    <tr 
+                      key={req.id} 
+                      onClick={() => onAction('Chi tiết yêu cầu rút tiền', (
+                        <div className="space-y-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary font-black text-lg">
+                                {req.driverName.split(' ').map(n => n[0]).join('')}
+                              </div>
+                              <div>
+                                <p className="text-lg font-black text-slate-900">{req.driverName}</p>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Mã đối tác: {req.driverId}</p>
+                              </div>
+                            </div>
+                            <span className={cn(
+                              "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                              req.status === 'pending' ? "bg-primary-fixed text-primary" :
+                              req.status === 'approved' ? "bg-secondary-container text-on-secondary-container" :
+                              req.status === 'paid' ? "bg-surface-container-high text-on-surface-variant" : "bg-tertiary-container text-on-tertiary-container"
+                            )}>
+                              {req.status === 'pending' ? 'Chờ xử lý' : req.status === 'approved' ? 'Đã duyệt' : req.status === 'paid' ? 'Đã chi' : 'Bị từ chối'}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Số tiền yêu cầu</p>
+                              <p className="text-xl font-black text-primary">{req.amount.toLocaleString()} VNĐ</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Số dư khả dụng</p>
+                              <p className="text-xl font-black text-slate-900">{req.available.toLocaleString()} VNĐ</p>
+                            </div>
+                          </div>
+
+                          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Thông tin ngân hàng</p>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-bold text-slate-900">Ngân hàng</span>
+                              <span className="text-sm font-medium text-slate-600">{req.bank}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-bold text-slate-900">Số tài khoản</span>
+                              <span className="text-sm font-medium text-slate-600">{req.account}</span>
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] text-slate-400 italic text-center">
+                            Yêu cầu được tạo vào lúc {req.date} • IP: 113.161.x.x
+                          </div>
+                        </div>
+                      ))}
+                      className={cn("hover:bg-surface-container-low/20 transition-colors cursor-pointer", req.status === 'approved' && "bg-secondary-container/5")}
+                    >
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">
@@ -1431,7 +1672,53 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
                     { name: 'Phạm Văn Đồng', id: 'SACO-TX-7731', trips: 51, gross: 15600000, fee: 2808000, net: 12792000, status: 'check' },
                     { name: 'Lê Minh Tuấn', id: 'SACO-TX-6622', trips: 29, gross: 8900000, fee: 1602000, net: 7298000, status: 'valid' },
                   ].map((row, i) => (
-                    <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
+                    <tr 
+                      key={i} 
+                      onClick={() => onAction('Chi tiết đối soát tuần', (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-4 p-4 bg-slate-900 rounded-3xl text-white">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-lg">
+                              {row.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                              <p className="text-lg font-black">{row.name}</p>
+                              <p className="text-white/50 text-[10px] font-black uppercase tracking-widest">{row.id}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Tổng chuyến đi</p>
+                              <p className="text-xl font-black text-slate-900">{row.trips} chuyến</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Doanh thu gộp</p>
+                              <p className="text-xl font-black text-slate-900">{row.gross.toLocaleString()} đ</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Phân bổ thu nhập</p>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-bold text-slate-900">Phí hệ thống (15%)</span>
+                                <span className="text-sm font-black text-tertiary">-{row.fee.toLocaleString()} đ</span>
+                              </div>
+                              <div className="flex justify-between items-center pt-3 border-t border-slate-200">
+                                <span className="text-sm font-black text-slate-900">Thu nhập ròng</span>
+                                <span className="text-sm font-black text-secondary">{row.net.toLocaleString()} đ</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                            <CheckCircle2 className="text-emerald-600" size={20} />
+                            <p className="text-xs font-bold text-emerald-900">Dữ liệu đã được đối soát và khớp với hệ thống XanhSM.</p>
+                          </div>
+                        </div>
+                      ))}
+                      className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                    >
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-bold text-xs">
@@ -1778,7 +2065,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface selection-primary">
-      <Sidebar activePage={activePage} onPageChange={setActivePage} onLogout={() => setIsLoggedIn(false)} />
+      <Sidebar activePage={activePage} onPageChange={setActivePage} onLogout={() => setIsLoggedIn(false)} onAction={openModal} />
       
       <main className="ml-64 min-h-screen relative">
         <TopBar title={activePage} onAction={openModal} />
@@ -1799,23 +2086,49 @@ export default function App() {
       
       {/* Contextual FAB */}
       <button 
-        onClick={() => openModal('Tạo mới', (
-          <div className="space-y-6">
-            <p className="text-sm text-slate-500">Chọn loại dữ liệu bạn muốn tạo mới trong hệ thống:</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary transition-all text-left group">
-                <Users size={24} className="text-primary mb-2" />
-                <p className="font-bold text-slate-900">Tài xế</p>
-                <p className="text-[10px] text-slate-400">Đăng ký đối tác mới</p>
-              </button>
-              <button className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary transition-all text-left group">
-                <Wallet size={24} className="text-secondary mb-2" />
-                <p className="font-bold text-slate-900">Chứng từ</p>
-                <p className="text-[10px] text-slate-400">Tạo phiếu chi/thu</p>
-              </button>
-            </div>
-          </div>
-        ))}
+        onClick={() => {
+          if (activePage === 'settings') {
+            openModal('Lưu cấu hình', (
+              <div className="space-y-6">
+                <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-6">
+                  <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <Save size={32} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black text-emerald-900">Xác nhận lưu?</p>
+                    <p className="text-sm text-emerald-600">Các thay đổi sẽ có hiệu lực ngay lập tức.</p>
+                  </div>
+                </div>
+                <button className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100">Lưu thay đổi</button>
+              </div>
+            ));
+          } else {
+            openModal('Thao tác nhanh', (
+              <div className="grid grid-cols-2 gap-4">
+                <button className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-primary hover:text-white transition-all group text-left">
+                  <UserPlus className="text-primary group-hover:text-white mb-3" size={32} />
+                  <p className="font-black text-sm">Thêm tài xế</p>
+                  <p className="text-[10px] opacity-60">Đăng ký đối tác mới</p>
+                </button>
+                <button className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-secondary hover:text-white transition-all group text-left">
+                  <DollarSign className="text-secondary group-hover:text-white mb-3" size={32} />
+                  <p className="font-black text-sm">Nạp tiền ví</p>
+                  <p className="text-[10px] opacity-60">Nạp tiền cho đối tác</p>
+                </button>
+                <button className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-tertiary hover:text-white transition-all group text-left">
+                  <FileText className="text-tertiary group-hover:text-white mb-3" size={32} />
+                  <p className="font-black text-sm">Tạo báo cáo</p>
+                  <p className="text-[10px] opacity-60">Xuất dữ liệu tùy chỉnh</p>
+                </button>
+                <button className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-sky-500 hover:text-white transition-all group text-left">
+                  <Bell className="text-sky-500 group-hover:text-white mb-3" size={32} />
+                  <p className="font-black text-sm">Gửi thông báo</p>
+                  <p className="text-[10px] opacity-60">Thông báo cho toàn đội</p>
+                </button>
+              </div>
+            ));
+          }
+        }}
         className="fixed bottom-8 right-8 w-14 h-14 primary-gradient text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"
       >
         {activePage === 'settings' ? <Save size={24} /> : <Plus size={24} />}
