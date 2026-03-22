@@ -146,7 +146,7 @@ const WITHDRAWAL_REQUESTS: WithdrawalRequest[] = [
 
 // --- Components ---
 
-const Sidebar = ({ activePage, onPageChange }: { activePage: Page, onPageChange: (page: Page) => void }) => {
+const Sidebar = ({ activePage, onPageChange, onLogout }: { activePage: Page, onPageChange: (page: Page) => void, onLogout: () => void }) => {
   const navItems = [
     { id: 'dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
     { id: 'drivers', label: 'Quản lý tài xế', icon: Users },
@@ -184,7 +184,10 @@ const Sidebar = ({ activePage, onPageChange }: { activePage: Page, onPageChange:
           <HelpCircle size={20} />
           <span>Hỗ trợ</span>
         </button>
-        <button className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition-colors duration-200 font-headline text-sm tracking-tight text-left rounded-lg">
+        <button 
+          onClick={onLogout}
+          className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition-colors duration-200 font-headline text-sm tracking-tight text-left rounded-lg"
+        >
           <LogOut size={20} />
           <span>Đăng xuất</span>
         </button>
@@ -1099,11 +1102,77 @@ const SettingsView = () => {
 // --- Main App ---
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [activePage, setActivePage] = React.useState<Page>('dashboard');
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+        {/* Immersive Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-sky-600/10 blur-[160px] rounded-full animate-pulse" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-orange-500/5 blur-[160px] rounded-full" />
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="z-10 w-full max-w-lg text-center"
+        >
+          <div className="flex justify-center mb-12">
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: 12 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="w-24 h-24 bg-sky-600 rounded-[2rem] flex items-center justify-center shadow-[0_0_50px_rgba(2,132,199,0.3)]"
+            >
+              <ShieldCheck size={56} className="text-white -rotate-12" />
+            </motion.div>
+          </div>
+          
+          <h1 className="font-headline text-7xl font-black tracking-tighter mb-6 leading-none">
+            SACO <span className="text-sky-500">SENTINEL</span>
+          </h1>
+          <p className="text-slate-400 text-xl mb-16 font-medium leading-relaxed max-w-md mx-auto">
+            Hệ thống quản trị vận hành & tài chính tập trung cho đối tác chiến lược SACO Holdings.
+          </p>
+
+          <div className="space-y-6">
+            <button 
+              onClick={() => { console.log('Login clicked'); setIsLoggedIn(true); }}
+              className="w-full bg-white text-black font-black text-lg py-5 rounded-3xl hover:bg-sky-500 hover:text-white transition-all transform active:scale-[0.98] shadow-2xl flex items-center justify-center gap-4 group overflow-hidden relative"
+            >
+              <span className="relative z-10">Bắt đầu trải nghiệm Demo</span>
+              <ChevronRight size={24} className="relative z-10 group-hover:translate-x-2 transition-transform" />
+              <div className="absolute inset-0 bg-gradient-to-r from-sky-400 to-sky-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <div className="flex items-center justify-center gap-4 text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+              <span className="w-8 h-[1px] bg-slate-800"></span>
+              <span>Phiên bản Showcase v1.0.5</span>
+              <span className="w-8 h-[1px] bg-slate-800"></span>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-12 text-[11px] font-black text-slate-700 uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
+            <span>Live System</span>
+          </div>
+          <span>•</span>
+          <span>ISO 27001 Certified</span>
+          <span>•</span>
+          <span>MISA Integrated</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface selection-primary">
-      <Sidebar activePage={activePage} onPageChange={setActivePage} />
+      <Sidebar activePage={activePage} onPageChange={setActivePage} onLogout={() => setIsLoggedIn(false)} />
       
       <main className="ml-64 min-h-screen">
         <TopBar title={activePage} />

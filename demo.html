@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SACO Sentinel - UI/UX Showcase</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine.js for simple UI logic -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#006497',
+                        secondary: '#00A651',
+                        tertiary: '#E31E24',
+                        surface: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headline: ['Manrope', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .sidebar-active {
+            color: #006497;
+            font-weight: 700;
+            background: #F0F9FF;
+            border-right: 4px solid #006497;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-[#1E293B]" x-data="{ loggedIn: false, activePage: 'dashboard' }">
+
+    <!-- 1. WELCOME / LOGIN SCREEN -->
+    <div x-show="!loggedIn" class="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <!-- Background Effects -->
+        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-sky-600/10 blur-[160px] rounded-full"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-orange-500/5 blur-[160px] rounded-full"></div>
+        
+        <div class="z-10 w-full max-w-lg text-center">
+            <div class="flex justify-center mb-12">
+                <div class="w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center shadow-[0_0_50px_rgba(0,100,151,0.3)] transform rotate-12">
+                    <i data-lucide="shield-check" class="w-14 h-14 text-white -rotate-12"></i>
+                </div>
+            </div>
+            
+            <h1 class="font-headline text-7xl font-black tracking-tighter mb-6 leading-none">
+                SACO <span class="text-sky-500">SENTINEL</span>
+            </h1>
+            <p class="text-slate-400 text-xl mb-16 font-medium leading-relaxed max-w-md mx-auto">
+                Hệ thống quản trị vận hành & tài chính tập trung cho đối tác chiến lược SACO Holdings.
+            </p>
+
+            <button @click="loggedIn = true; console.log('Login clicked'); $nextTick(() => { lucide.createIcons(); })" 
+                class="w-full bg-white text-black font-black text-lg py-5 rounded-3xl hover:bg-sky-500 hover:text-white transition-all transform active:scale-[0.98] shadow-2xl flex items-center justify-center gap-4 group relative overflow-hidden">
+                <span class="relative z-10">Bắt đầu trải nghiệm Demo</span>
+                <i data-lucide="chevron-right" class="relative z-10 group-hover:translate-x-2 transition-transform"></i>
+            </button>
+            
+            <div class="mt-8 flex items-center justify-center gap-4 text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                <span class="w-8 h-[1px] bg-slate-800"></span>
+                <span>Phiên bản Showcase v1.0.5</span>
+                <span class="w-8 h-[1px] bg-slate-800"></span>
+            </div>
+        </div>
+
+        <div class="absolute bottom-12 left-0 right-0 flex justify-center gap-12 text-[11px] font-black text-slate-700 uppercase tracking-[0.2em]">
+            <span>Security First</span>
+            <span>•</span>
+            <span>Real-time Sync</span>
+            <span>•</span>
+            <span>Enterprise Grade</span>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION INTERFACE -->
+    <div x-show="loggedIn" x-cloak class="min-h-screen flex">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full z-50">
+            <div class="p-8">
+                <div class="flex flex-col gap-1">
+                    <span class="text-xl font-black text-primary tracking-tighter font-headline">SACO Holdings</span>
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Sentinel Enterprise</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-2">
+                <button @click="activePage = 'dashboard'; setTimeout(() => lucide.createIcons(), 50)" 
+                    :class="activePage === 'dashboard' ? 'sidebar-active' : 'text-slate-500 hover:bg-slate-50'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>Bảng điều khiển</span>
+                </button>
+                <button @click="activePage = 'drivers'; setTimeout(() => lucide.createIcons(), 50)" 
+                    :class="activePage === 'drivers' ? 'sidebar-active' : 'text-slate-500 hover:bg-slate-50'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span>Quản lý tài xế</span>
+                </button>
+                <button @click="activePage = 'finance'; setTimeout(() => lucide.createIcons(), 50)" 
+                    :class="activePage === 'finance' ? 'sidebar-active' : 'text-slate-500 hover:bg-slate-50'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold">
+                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                    <span>Quyết toán tài chính</span>
+                </button>
+                <button @click="activePage = 'settings'; setTimeout(() => lucide.createIcons(), 50)" 
+                    :class="activePage === 'settings' ? 'sidebar-active' : 'text-slate-500 hover:bg-slate-50'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span>Cài đặt hệ thống</span>
+                </button>
+            </nav>
+
+            <div class="p-6 border-t border-slate-100">
+                <button @click="loggedIn = false" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-tertiary hover:bg-red-50 rounded-xl transition-all text-sm font-bold">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 ml-64 min-h-screen flex flex-col">
+            
+            <!-- TOP BAR -->
+            <header class="h-20 glass-header border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
+                <div class="flex items-center gap-4 flex-1 max-w-xl">
+                    <div class="relative w-full">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Tìm kiếm tài xế, mã đối soát, chứng từ..." 
+                            class="w-full bg-slate-100/50 border-none rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <button class="relative text-slate-400 hover:text-primary transition-colors">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-tertiary border-2 border-white rounded-full"></span>
+                    </button>
+                    <div class="h-8 w-[1px] bg-slate-200"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <p class="text-sm font-bold text-slate-900 leading-none">Quách Thành Đạt</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-1">Administrator</p>
+                        </div>
+                        <img src="https://picsum.photos/seed/admin/100/100" alt="Avatar" class="w-10 h-10 rounded-2xl object-cover border-2 border-slate-100 shadow-sm">
+                    </div>
+                </div>
+            </header>
+
+            <!-- VIEW CONTENT -->
+            <div class="p-10">
+                
+                <!-- DASHBOARD VIEW -->
+                <div x-show="activePage === 'dashboard'" class="space-y-10">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Tổng quan vận hành</h2>
+                            <p class="text-slate-500 font-medium mt-1">Dữ liệu cập nhật thời gian thực từ hệ thống XanhSM.</p>
+                        </div>
+                        <button class="bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Xuất báo cáo
+                        </button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-primary p-6 rounded-[2rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden">
+                            <p class="text-white/60 text-[10px] font-black uppercase tracking-widest">Doanh thu hôm nay</p>
+                            <h3 class="text-4xl font-black font-headline mt-2">142.5 <span class="text-lg font-medium opacity-60">trđ</span></h3>
+                            <div class="mt-6 flex items-center gap-2 text-xs font-bold bg-white/10 w-fit px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i>
+                                <span>+12% so với hôm qua</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tài xế đang chạy</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">842 <span class="text-lg font-medium text-slate-300">/ 1.2k</span></h3>
+                            <div class="mt-4 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-secondary h-full w-[70%]"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tổng tiền ký quỹ</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">4.2 <span class="text-lg font-medium text-slate-300">tỷ</span></h3>
+                            <p class="mt-4 text-[10px] font-bold text-secondary uppercase">An toàn hệ thống</p>
+                        </div>
+                        <div class="bg-red-50 p-6 rounded-[2rem] border border-red-100 shadow-sm relative overflow-hidden">
+                            <p class="text-red-400 text-[10px] font-black uppercase tracking-widest">Cảnh báo nợ xấu</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-red-600">12 <span class="text-lg font-medium opacity-60">TX</span></h3>
+                            <i data-lucide="alert-circle" class="absolute -right-4 -top-4 w-24 h-24 text-red-500/10"></i>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+                            <div class="flex justify-between items-center mb-8">
+                                <h4 class="text-lg font-black text-slate-900">Biểu đồ doanh thu tuần</h4>
+                                <div class="flex gap-2">
+                                    <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase"><span class="w-2 h-2 rounded-full bg-primary"></span> Thực tế</span>
+                                    <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase"><span class="w-2 h-2 rounded-full bg-slate-200"></span> Kế hoạch</span>
+                                </div>
+                            </div>
+                            <!-- Placeholder for Chart -->
+                            <div class="h-64 bg-slate-50 rounded-3xl flex items-end justify-between p-6 gap-4">
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[40%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[80%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[60%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[70%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[50%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[90%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[80%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[60%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[70%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[85%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[90%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[75%]"></div></div>
+                                <div class="w-full bg-slate-200 rounded-t-lg h-[65%] relative"><div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[95%]"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+                            <h4 class="text-lg font-black text-slate-900 mb-8">Nhật ký hệ thống</h4>
+                            <div class="space-y-6">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">NL</div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Duyệt rút tiền <span class="text-primary">#FT9921</span></p>
+                                        <p class="text-[10px] text-slate-400 font-medium mt-1">14:20 • Nguyễn Lâm</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs shrink-0">HA</div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Khóa tài khoản <span class="text-tertiary">TX-8821</span></p>
+                                        <p class="text-[10px] text-slate-400 font-medium mt-1">13:45 • Hoàng Anh</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-xs shrink-0">TD</div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Cập nhật biểu phí HTX</p>
+                                        <p class="text-[10px] text-slate-400 font-medium mt-1">11:10 • Thành Đạt</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="w-full mt-8 py-3 rounded-2xl border border-slate-100 text-xs font-bold text-slate-400 hover:bg-slate-50 transition-all">Xem tất cả</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRIVER MANAGEMENT VIEW (Simplified) -->
+                <div x-show="activePage === 'drivers'" class="space-y-10">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Quản lý tài xế</h2>
+                            <p class="text-slate-500 font-medium mt-1">Danh sách đối tác vận tải thuộc hệ thống SACO.</p>
+                        </div>
+                        <button class="bg-primary text-white px-8 py-4 rounded-2xl text-sm font-bold flex items-center gap-2 hover:shadow-xl transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Thêm tài xế mới
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                                    <th class="px-8 py-6">Tài xế</th>
+                                    <th class="px-8 py-6">HTX Liên kết</th>
+                                    <th class="px-8 py-6">Ví tài khoản</th>
+                                    <th class="px-8 py-6">Ký quỹ</th>
+                                    <th class="px-8 py-6">Trạng thái</th>
+                                    <th class="px-8 py-6 text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr class="hover:bg-slate-50/30 transition-colors">
+                                    <td class="px-8 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-500">NL</div>
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-900">Nguyễn Lâm Nhật</p>
+                                                <p class="text-[10px] text-slate-400">0901 234 567</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-5 text-sm font-medium text-slate-600">HTX Sài Gòn Xanh</td>
+                                    <td class="px-8 py-5 text-sm font-bold text-primary">12,450,000 đ</td>
+                                    <td class="px-8 py-5 text-sm font-bold text-slate-900">5,000,000 đ</td>
+                                    <td class="px-8 py-5">
+                                        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded-full">Đang hoạt động</span>
+                                    </td>
+                                    <td class="px-8 py-5 text-right">
+                                        <button class="p-2 hover:bg-slate-100 rounded-xl transition-all"><i data-lucide="more-vertical" class="w-5 h-5 text-slate-300"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/30 transition-colors">
+                                    <td class="px-8 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-500">TH</div>
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-900">Trần Hoàng Anh</p>
+                                                <p class="text-[10px] text-slate-400">0908 765 432</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-5 text-sm font-medium text-slate-600">HTX Vận tải 24h</td>
+                                    <td class="px-8 py-5 text-sm font-bold text-primary">8,120,000 đ</td>
+                                    <td class="px-8 py-5 text-sm font-bold text-slate-900">5,000,000 đ</td>
+                                    <td class="px-8 py-5">
+                                        <span class="px-3 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-full">Đã khóa</span>
+                                    </td>
+                                    <td class="px-8 py-5 text-right">
+                                        <button class="p-2 hover:bg-slate-100 rounded-xl transition-all"><i data-lucide="more-vertical" class="w-5 h-5 text-slate-300"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- FINANCE VIEW (Simplified) -->
+                <div x-show="activePage === 'finance'" class="space-y-10">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Đối soát tài chính</h2>
+                            <p class="text-slate-500 font-medium mt-1">Quản lý dòng tiền và quyết toán định kỳ.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Doanh thu gộp tuần</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-slate-900">1.24 <span class="text-lg font-medium text-slate-300">tỷ</span></h3>
+                        </div>
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Phí hệ thống (15%)</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-tertiary">186 <span class="text-lg font-medium opacity-40">trđ</span></h3>
+                        </div>
+                        <div class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm">
+                            <p class="text-emerald-500 text-[10px] font-black uppercase tracking-widest">Thu nhập ròng tài xế</p>
+                            <h3 class="text-4xl font-black font-headline mt-2 text-emerald-700">1.02 <span class="text-lg font-medium opacity-60">tỷ</span></h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-8">
+                            <h4 class="text-lg font-black text-slate-900">Yêu cầu rút tiền chờ duyệt</h4>
+                            <span class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">12 Yêu cầu mới</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm font-bold text-primary">PV</div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Phạm Văn Đồng</p>
+                                        <p class="text-[10px] text-slate-400">Vietcombank • 1029384756</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-black text-primary">4,500,000 đ</p>
+                                    <p class="text-[10px] text-slate-400 font-bold">Yêu cầu lúc 08:30 sáng</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="check" class="w-5 h-5"></i></button>
+                                    <button class="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center hover:shadow-lg transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS VIEW (Simplified) -->
+                <div x-show="activePage === 'settings'" class="space-y-10">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="font-headline text-4xl font-black text-slate-900 tracking-tight">Cài đặt hệ thống</h2>
+                            <p class="text-slate-500 font-medium mt-1">Cấu hình tham số vận hành và biểu phí.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center"><i data-lucide="calendar" class="w-6 h-6"></i></div>
+                                <h4 class="text-lg font-black text-slate-900">Chu kỳ đối soát</h4>
+                            </div>
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Ngày chốt sổ tuần</label>
+                                    <select class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none">
+                                        <option>Thứ 3 hàng tuần</option>
+                                        <option>Thứ 4 hàng tuần</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Giờ khóa dữ liệu</label>
+                                    <input type="text" value="17:00" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center"><i data-lucide="percent" class="w-6 h-6"></i></div>
+                                <h4 class="text-lg font-black text-slate-900">Quản lý biểu phí</h4>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-600">Phí HTX Quản lý</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" value="15" class="w-16 bg-transparent text-right font-black text-primary outline-none">
+                                        <span class="font-bold text-slate-400">%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-600">Phí Nền tảng SACO</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" value="5" class="w-16 bg-transparent text-right font-black text-primary outline-none">
+                                        <span class="font-bold text-slate-400">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
