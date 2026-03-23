@@ -83,6 +83,31 @@ interface Driver {
   registrationDate: string;
 }
 
+interface SalesPartner {
+  id: string;
+  name: string;
+  type: 'F1' | 'F2';
+  phone: string;
+  region: string;
+  activeCars: number;
+  totalCommission: number;
+  pendingCommission: number;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+interface CarSale {
+  id: string;
+  customerName: string;
+  vin: string;
+  model: string;
+  partnerName: string;
+  price: number;
+  commission: number;
+  paymentMethod: 'CASH' | 'BANK_LOAN';
+  status: 'ORDERED' | 'RECEIVED' | 'HANDED_OVER' | 'APP_LINKED' | 'delivered';
+  date: string;
+}
+
 interface WithdrawalRequest {
   id: string;
   driverName: string;
@@ -94,6 +119,18 @@ interface WithdrawalRequest {
   date: string;
   status: 'pending' | 'approved' | 'paid' | 'rejected';
   reason?: string;
+}
+
+interface Permission {
+  id: string;
+  label: string;
+  module: string;
+}
+
+interface Role {
+  id: string;
+  name: string;
+  permissions: string[];
 }
 
 // --- Mock Data ---
@@ -151,6 +188,36 @@ const WITHDRAWAL_REQUESTS: WithdrawalRequest[] = [
   { id: 'REQ-002', driverName: 'Phạm Minh', driverId: '#DX1102', amount: 12000000, available: 14120000, bank: 'Vietcombank', account: '1029438291 - PHAM MINH', date: '24/10/2023, 10:15', status: 'approved' },
   { id: 'REQ-003', driverName: 'Hoàng Thuý', driverId: '#DX4481', amount: 2450000, available: 4100000, bank: 'Techcombank', account: '1903348122 - HOANG THUY', date: '23/10/2023, 16:45', status: 'paid' },
   { id: 'REQ-004', driverName: 'Trần Dũng', driverId: '#DX9923', amount: 8900000, available: 3200000, bank: 'Agribank', account: '4800205123 - TRAN DUNG', date: '23/10/2023, 09:12', status: 'rejected', reason: 'Số dư không đủ' },
+];
+
+const SALES_PARTNERS: SalesPartner[] = [
+  { id: 'SP-001', name: 'Đại lý Saco Miền Đông', type: 'F1', phone: '0901234567', region: 'Đồng Nai', activeCars: 45, totalCommission: 125000000, pendingCommission: 12000000, status: 'ACTIVE' },
+  { id: 'SP-002', name: 'Showroom Saco Thủ Đức', type: 'F1', phone: '0902345678', region: 'TP.HCM', activeCars: 32, totalCommission: 85000000, pendingCommission: 5000000, status: 'ACTIVE' },
+  { id: 'SP-003', name: 'Cộng tác viên Trần Long', type: 'F2', phone: '0903456789', region: 'Bình Dương', activeCars: 12, totalCommission: 24000000, pendingCommission: 2000000, status: 'ACTIVE' },
+];
+
+const CAR_SALES: CarSale[] = [
+  { id: 'SALE-1001', customerName: 'Lê Minh Tâm', vin: 'VF8-992831', model: 'VinFast VF8', partnerName: 'Đại lý Saco Miền Đông', price: 1200000000, commission: 15000000, paymentMethod: 'BANK_LOAN', status: 'HANDED_OVER', date: '20/03/2026' },
+  { id: 'SALE-1002', customerName: 'Nguyễn Hoàng Nam', vin: 'VF9-112233', model: 'VinFast VF9', partnerName: 'Showroom Saco Thủ Đức', price: 2100000000, commission: 25000000, paymentMethod: 'CASH', status: 'RECEIVED', date: '21/03/2026' },
+  { id: 'SALE-1003', customerName: 'Phạm Thanh Thảo', vin: 'VFe34-445566', model: 'VinFast VFe34', partnerName: 'Cộng tác viên Trần Long', price: 710000000, commission: 8000000, paymentMethod: 'CASH', status: 'APP_LINKED', date: '22/03/2026' },
+];
+
+const PERMISSIONS: Permission[] = [
+  { id: 'view_dashboard', label: 'Xem Dashboard', module: 'Tổng quan' },
+  { id: 'view_drivers', label: 'Xem danh sách tài xế', module: 'Tài xế' },
+  { id: 'edit_drivers', label: 'Chỉnh sửa tài xế', module: 'Tài xế' },
+  { id: 'approve_drivers', label: 'Phê duyệt hồ sơ', module: 'Tài xế' },
+  { id: 'view_finance', label: 'Xem tài chính', module: 'Tài chính' },
+  { id: 'approve_withdraw', label: 'Duyệt rút tiền', module: 'Tài chính' },
+  { id: 'view_sales', label: 'Xem doanh thu bán xe', module: 'Bán xe' },
+  { id: 'edit_settings', label: 'Cấu hình hệ thống', module: 'Cài đặt' },
+];
+
+const INITIAL_ROLES: Role[] = [
+  { id: 'admin', name: 'Administrator', permissions: PERMISSIONS.map(p => p.id) },
+  { id: 'accounting', name: 'Kế toán', permissions: ['view_dashboard', 'view_drivers', 'view_finance', 'approve_withdraw', 'view_sales'] },
+  { id: 'operator', name: 'Vận hành', permissions: ['view_dashboard', 'view_drivers', 'edit_drivers', 'approve_drivers'] },
+  { id: 'sales', name: 'Kinh doanh', permissions: ['view_dashboard', 'view_sales'] },
 ];
 
 // --- Components ---
@@ -485,9 +552,9 @@ const StatCard: React.FC<{ stat: Stat, onAction?: (title: string, content: React
 
 const DashboardView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
   const stats: Stat[] = [
-    { label: 'Tổng doanh thu tuần', value: '2.450.000.000 VNĐ', trend: '+12.4%', icon: <Wallet size={20} /> },
-    { label: 'Tài xế đang hoạt động', value: '1.284', capacity: '85% Công suất', icon: <Car size={20} /> },
-    { label: 'Tổng ký quỹ', value: '15.820.000.000 VNĐ', icon: <Database size={20} /> },
+    { label: 'Doanh thu Xanh Partner', value: '1.850.000.000 VNĐ', trend: '+8.2%', icon: <Car size={20} /> },
+    { label: 'Doanh thu Saco Holdings', value: '600.000.000 VNĐ', trend: '+24.5%', icon: <Wallet size={20} /> },
+    { label: 'Tổng ký quỹ tài xế', value: '15.820.000.000 VNĐ', icon: <Database size={20} /> },
     { label: 'Công nợ quá hạn', value: '84.200.000 VNĐ', icon: <AlertCircle size={20} />, variant: 'critical' },
   ];
 
@@ -795,6 +862,8 @@ const DashboardView: React.FC<{ onAction: (title: string, content: React.ReactNo
 };
 
 const DriverManagementView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
+  const [activeTab, setActiveTab] = React.useState<'drivers' | 'sales'>('drivers');
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -803,12 +872,38 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
     >
       <section className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-on-surface mb-2">Quản Lý Tài Xế</h1>
-          <p className="text-on-surface-variant max-w-lg">Theo dõi hoạt động, trạng thái tài chính và phê duyệt hồ sơ đối tác vận hành của SACO Holdings.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-on-surface mb-2">
+            {activeTab === 'drivers' ? 'Quản Lý Tài Xế' : 'Đối Tác Kinh Doanh'}
+          </h1>
+          <p className="text-on-surface-variant max-w-lg">
+            {activeTab === 'drivers' 
+              ? 'Theo dõi hoạt động, trạng thái tài chính và phê duyệt hồ sơ đối tác vận hành của SACO Holdings.' 
+              : 'Quản lý mạng lưới đại lý F1, F2 và cộng tác viên bán xe Saco Holdings.'}
+          </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <div className="flex bg-surface-container-low p-1 rounded-xl border border-slate-200 mr-4">
+            <button 
+              onClick={() => setActiveTab('drivers')}
+              className={cn(
+                "px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                activeTab === 'drivers' ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-primary"
+              )}
+            >
+              Tài xế
+            </button>
+            <button 
+              onClick={() => setActiveTab('sales')}
+              className={cn(
+                "px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                activeTab === 'sales' ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-primary"
+              )}
+            >
+              Đối tác Sales
+            </button>
+          </div>
           <button 
-            onClick={() => onAction('Xuất báo cáo tài xế', (
+            onClick={() => onAction('Xuất báo cáo', (
               <div className="space-y-6">
                 <div className="p-4 bg-sky-50 rounded-2xl border border-sky-100 flex items-center gap-4">
                   <FileText className="text-sky-600" size={32} />
@@ -854,7 +949,9 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
         </div>
       </section>
 
-      <section className="grid grid-cols-12 gap-6">
+      {activeTab === 'drivers' ? (
+        <>
+          <section className="grid grid-cols-12 gap-6">
         <div 
           onClick={() => onAction('Tổng số tài xế', (
             <div className="space-y-6">
@@ -1264,12 +1361,138 @@ const DriverManagementView: React.FC<{ onAction: (title: string, content: React.
           </table>
         </div>
       </section>
+        </>
+      ) : (
+        <>
+          <section className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng Đối Tác Sales</p>
+                <h3 className="text-4xl font-extrabold text-primary">{SALES_PARTNERS.length}</h3>
+              </div>
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                <Users size={32} />
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Xe Đang Hoạt Động</p>
+                <h3 className="text-4xl font-extrabold text-secondary">
+                  {SALES_PARTNERS.reduce((acc, curr) => acc + curr.activeCars, 0)}
+                </h3>
+              </div>
+              <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+                <Car size={32} />
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hoa Hồng Chờ Chi</p>
+                <h3 className="text-4xl font-extrabold text-tertiary">
+                  {(SALES_PARTNERS.reduce((acc, curr) => acc + curr.pendingCommission, 0) / 1000000).toFixed(1)}M
+                </h3>
+              </div>
+              <div className="w-16 h-16 bg-tertiary/10 rounded-2xl flex items-center justify-center text-tertiary">
+                <DollarSign size={32} />
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-surface-container-low text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-6 py-4">Đối Tác Sales</th>
+                    <th className="px-6 py-4">Loại</th>
+                    <th className="px-6 py-4">Khu Vực</th>
+                    <th className="px-6 py-4 text-right">Số Xe</th>
+                    <th className="px-6 py-4 text-right">Tổng Hoa Hồng (VNĐ)</th>
+                    <th className="px-6 py-4 text-right">Chờ Chi (VNĐ)</th>
+                    <th className="px-6 py-4 text-center">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-container">
+                  {SALES_PARTNERS.map((partner) => (
+                    <tr key={partner.id} className="hover:bg-surface-container-low/50 transition-colors">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold">
+                            {partner.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-on-surface">{partner.name}</p>
+                            <p className="text-xs text-slate-400">{partner.phone}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase">
+                          {partner.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-sm font-medium">{partner.region}</td>
+                      <td className="px-6 py-5 text-right font-bold">{partner.activeCars}</td>
+                      <td className="px-6 py-5 text-right font-medium">{partner.totalCommission.toLocaleString()}</td>
+                      <td className="px-6 py-5 text-right font-bold text-primary">{partner.pendingCommission.toLocaleString()}</td>
+                      <td className="px-6 py-5">
+                        <div className="flex justify-center gap-2">
+                          <button 
+                            onClick={() => onAction('Chi tiết đối tác sales', (
+                              <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-2xl">
+                                    {partner.name.split(' ').map(n => n[0]).join('').slice(-2)}
+                                  </div>
+                                  <div>
+                                    <p className="font-black text-slate-900 text-xl">{partner.name}</p>
+                                    <p className="text-sm text-slate-400 font-bold">{partner.type} • {partner.region}</p>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Tổng hoa hồng</p>
+                                    <p className="text-xl font-black text-slate-900">{partner.totalCommission.toLocaleString()} đ</p>
+                                  </div>
+                                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Chờ chi trả</p>
+                                    <p className="text-xl font-black text-primary">{partner.pendingCommission.toLocaleString()} đ</p>
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Danh sách xe đã bán</h4>
+                                  {CAR_SALES.filter(s => s.partnerName === partner.name).map((sale, i) => (
+                                    <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                                      <div>
+                                        <p className="text-xs font-bold text-slate-900">{sale.customerName}</p>
+                                        <p className="text-[10px] text-slate-400">{sale.model} • {sale.vin}</p>
+                                      </div>
+                                      <span className="text-xs font-black text-emerald-600">+{sale.commission.toLocaleString()}đ</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )}
     </motion.div>
   );
 };
 
 const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode) => void }> = ({ onAction }) => {
-  const [activeTab, setActiveTab] = React.useState<'withdraw' | 'reconcile'>('withdraw');
+  const [activeTab, setActiveTab] = React.useState<'withdraw' | 'reconcile' | 'sales'>('withdraw');
 
   return (
     <motion.div 
@@ -1280,12 +1503,14 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
       <section className="flex justify-between items-end">
         <div>
           <h1 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">
-            {activeTab === 'withdraw' ? 'Yêu Cầu Rút Tiền' : 'Đối Soát Tuần'}
+            {activeTab === 'withdraw' ? 'Yêu Cầu Rút Tiền' : activeTab === 'reconcile' ? 'Đối Soát Tuần' : 'Doanh Thu Bán Xe'}
           </h1>
           <p className="text-on-surface-variant mt-1">
             {activeTab === 'withdraw' 
               ? 'Quản lý và phê duyệt các yêu cầu thanh toán từ tài xế đối tác.' 
-              : 'Quản lý và phê duyệt quyết toán tài chính định kỳ hàng tuần.'}
+              : activeTab === 'reconcile'
+              ? 'Quản lý và phê duyệt quyết toán tài chính định kỳ hàng tuần.'
+              : 'Theo dõi doanh thu, hoa hồng và trạng thái bàn giao xe từ Saco Holdings.'}
           </p>
         </div>
         <div className="flex bg-surface-container-low p-1 rounded-xl border border-slate-200">
@@ -1306,6 +1531,15 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
             )}
           >
             Đối soát
+          </button>
+          <button 
+            onClick={() => setActiveTab('sales')}
+            className={cn(
+              "px-4 py-2 text-xs font-bold rounded-lg transition-all",
+              activeTab === 'sales' ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-primary"
+            )}
+          >
+            Bán xe
           </button>
         </div>
       </section>
@@ -1598,7 +1832,7 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
             </div>
           </section>
         </>
-      ) : (
+      ) : activeTab === 'reconcile' ? (
         <>
           <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
@@ -1745,6 +1979,129 @@ const FinanceView: React.FC<{ onAction: (title: string, content: React.ReactNode
                       <td className="px-6 py-5 text-right">
                         <button className="text-slate-300 group-hover:text-primary transition-colors">
                           <MoreVertical size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
+          <section className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Doanh Thu Bán Xe</p>
+                <h3 className="text-4xl font-extrabold text-primary">
+                  {(CAR_SALES.reduce((acc, curr) => acc + curr.price, 0) / 1000000000).toFixed(1)}B
+                </h3>
+              </div>
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                <TrendingUp size={32} />
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Xe Đã Bàn Giao</p>
+                <h3 className="text-4xl font-extrabold text-secondary">
+                  {CAR_SALES.filter(s => s.status === 'delivered').length}
+                </h3>
+              </div>
+              <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+                <CheckCircle2 size={32} />
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hoa Hồng Phải Chi</p>
+                <h3 className="text-4xl font-extrabold text-tertiary">
+                  {(CAR_SALES.reduce((acc, curr) => acc + curr.commission, 0) / 1000000).toFixed(1)}M
+                </h3>
+              </div>
+              <div className="w-16 h-16 bg-tertiary/10 rounded-2xl flex items-center justify-center text-tertiary">
+                <DollarSign size={32} />
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-surface-container-low text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-6 py-4">Khách Hàng</th>
+                    <th className="px-6 py-4">Mẫu Xe</th>
+                    <th className="px-6 py-4">Đối Tác Sales</th>
+                    <th className="px-6 py-4 text-right">Giá Trị (VNĐ)</th>
+                    <th className="px-6 py-4 text-right">Hoa Hồng (VNĐ)</th>
+                    <th className="px-6 py-4 text-center">Trạng Thái</th>
+                    <th className="px-6 py-4 text-center">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-container">
+                  {CAR_SALES.map((sale) => (
+                    <tr key={sale.id} className="hover:bg-surface-container-low/50 transition-colors">
+                      <td className="px-6 py-5">
+                        <p className="font-bold text-on-surface">{sale.customerName}</p>
+                        <p className="text-[10px] text-slate-400">Hợp đồng: {sale.id}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="text-sm font-medium">{sale.model}</p>
+                        <p className="text-[10px] text-slate-400">VIN: {sale.vin}</p>
+                      </td>
+                      <td className="px-6 py-5 text-sm font-medium">{sale.partnerName}</td>
+                      <td className="px-6 py-5 text-right font-bold">{sale.price.toLocaleString()}</td>
+                      <td className="px-6 py-5 text-right font-bold text-primary">{sale.commission.toLocaleString()}</td>
+                      <td className="px-6 py-5 text-center">
+                        <span className={cn(
+                          "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-tight",
+                          sale.status === 'delivered' ? "bg-secondary-container text-on-secondary-container" : "bg-primary-fixed text-primary"
+                        )}>
+                          {sale.status === 'delivered' ? 'Đã bàn giao' : 'Đang xử lý'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-center">
+                        <button 
+                          onClick={() => onAction('Chi tiết hợp đồng bán xe', (
+                            <div className="space-y-6">
+                              <div className="p-6 bg-slate-900 rounded-[2.5rem] text-white">
+                                <p className="text-white/50 text-[10px] font-black uppercase tracking-widest">Hợp đồng bán xe</p>
+                                <p className="text-2xl font-black mt-2">{sale.customerName}</p>
+                                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+                                  <div>
+                                    <p className="text-[10px] text-white/50 uppercase font-bold">Mẫu xe</p>
+                                    <p className="text-sm font-bold">{sale.model}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] text-white/50 uppercase font-bold">Số VIN</p>
+                                    <p className="text-sm font-bold">{sale.vin}</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Giá trị xe</p>
+                                  <p className="text-xl font-black text-slate-900">{sale.price.toLocaleString()} đ</p>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Hoa hồng sales</p>
+                                  <p className="text-xl font-black text-primary">{sale.commission.toLocaleString()} đ</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                <Users className="text-primary" size={20} />
+                                <div>
+                                  <p className="text-xs font-bold text-slate-900">Đối tác: {sale.partnerName}</p>
+                                  <p className="text-[10px] text-slate-400">Ngày bán: {sale.date}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all"
+                        >
+                          <Eye size={18} />
                         </button>
                       </td>
                     </tr>
@@ -1916,6 +2273,58 @@ const SettingsView: React.FC<{ onAction: (title: string, content: React.ReactNod
           </section>
         </div>
       </div>
+
+      <section className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <div className="flex items-center gap-4 mb-10">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
+            <Lock size={28} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-sky-900">Ma trận phân quyền</h3>
+            <p className="text-xs text-slate-400 font-medium">Thiết lập quyền truy cập cho các vai trò hệ thống</p>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quyền hạn / Chức năng</th>
+                {INITIAL_ROLES.map(role => (
+                  <th key={role.id} className="py-4 px-4 text-center">
+                    <div className="text-[10px] font-black text-sky-900 uppercase tracking-widest">{role.name}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {PERMISSIONS.map(permission => (
+                <tr key={permission.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="py-4 px-4">
+                    <div className="text-sm font-bold text-sky-900">{permission.label}</div>
+                    <div className="text-[10px] text-slate-400 font-medium">{permission.module}</div>
+                  </td>
+                  {INITIAL_ROLES.map(role => (
+                    <td key={role.id} className="py-4 px-4 text-center">
+                      <div className="flex justify-center">
+                        <button 
+                          className={cn(
+                            "w-6 h-6 rounded-md flex items-center justify-center transition-all",
+                            role.permissions.includes(permission.id) 
+                              ? "bg-emerald-500 text-white shadow-sm" 
+                              : "bg-slate-100 text-slate-300 hover:bg-slate-200"
+                          )}
+                        >
+                          {role.permissions.includes(permission.id) ? <Verified size={14} /> : <Lock size={12} />}
+                        </button>
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="bg-white rounded-3xl p-10 shadow-sm border border-slate-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-sky-50/50 to-transparent -mr-40 -mt-40 rounded-full"></div>
